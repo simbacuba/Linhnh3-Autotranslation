@@ -256,11 +256,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="key-hint" id="keyHint">✓ Key saved! You can now translate.</div>
 </div>
 
-<!-- CORS WARNING -->
+<!-- CORS ERROR BANNER -->
 <div class="cors-banner" id="corsBanner">
-  <strong>⚠ Connection blocked (CORS error)</strong> — Your browser prevents direct calls to Anthropic's API from a webpage.<br>
-  <strong>Fix:</strong> Select a proxy below, or run the app locally with a backend. The proxy forwards your request securely — your API key is sent directly to Anthropic, not stored by the proxy.
-  <div class="proxy-row" id="proxyRow"></div>
+  <strong>⚠ Connection blocked (CORS error)</strong> — GitHub Pages cannot call Anthropic's API directly.<br>
+  <strong>Fix in 2 minutes:</strong> Set up a free Cloudflare Worker (see ⚙️ Settings → Worker URL), then paste your Worker URL there.
+  <a href="#" onclick="switchTab('settings',document.querySelectorAll('.tab')[3]);return false;"
+     style="display:inline-block;margin-top:8px;padding:5px 14px;background:var(--ac);color:#000;border-radius:7px;font-weight:700;font-size:.8rem;text-decoration:none">
+    ⚙️ Go to Settings →
+  </a>
 </div>
 
 <!-- TABS -->
@@ -396,22 +399,41 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <!-- SETTINGS PANEL -->
 <div class="panel" id="panel-settings">
+
+  <!-- WORKER URL — full width, top of settings -->
+  <div style="background:rgba(0,229,180,.06);border:1.5px solid rgba(0,229,180,.25);border-radius:var(--r);padding:18px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:1.1rem">⚡</span>
+      <strong style="font-size:.95rem">Cloudflare Worker URL</strong>
+      <span style="font-size:.72rem;background:rgba(0,229,180,.15);color:var(--ac);padding:2px 8px;border-radius:20px;font-weight:600">Required for GitHub Pages</span>
+    </div>
+    <div style="font-size:.82rem;color:var(--tx2);margin-bottom:12px;line-height:1.6">
+      Paste your Cloudflare Worker URL here. This solves the CORS error permanently.<br>
+      <strong style="color:var(--tx)">How to set up (2 min, free):</strong><br>
+      1. Go to <a href="https://workers.cloudflare.com" target="_blank" style="color:var(--ac)">workers.cloudflare.com</a> → Sign up free<br>
+      2. Click <strong style="color:var(--tx)">Create Worker</strong> → replace all code with the <code style="font-family:'JetBrains Mono';font-size:.75rem;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">worker.js</code> file you downloaded<br>
+      3. Click <strong style="color:var(--tx)">Deploy</strong> → copy the URL (e.g. <code style="font-family:'JetBrains Mono';font-size:.75rem;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">https://my-worker.username.workers.dev</code>)<br>
+      4. Paste it below and click Save
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="workerUrl" placeholder="https://my-worker.username.workers.dev"
+        style="flex:1;padding:9px 13px;background:var(--bg);border:1.5px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;border-radius:8px;outline:none;transition:border-color .2s"
+        onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--bd)'"
+        oninput="workerUrlChanged()">
+      <button onclick="saveWorkerUrl()" style="padding:9px 18px;background:var(--ac);color:#000;border:none;border-radius:8px;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap">
+        Save
+      </button>
+    </div>
+    <div id="workerSaved" style="font-size:.72rem;color:var(--ac);margin-top:6px;display:none">✓ Worker URL saved! Translation should work now.</div>
+    <div id="workerNone" style="font-size:.72rem;color:var(--ac3);margin-top:6px;display:none">⚠ No Worker URL set — translation will fail on GitHub Pages.</div>
+  </div>
+
   <div class="sgrid">
     <div class="sgrp">
       <h3>🔑 Claude API Key</h3>
-      <div style="font-size:.78rem;color:var(--tx3);margin-bottom:4px">Stored locally, never shared.</div>
+      <div style="font-size:.78rem;color:var(--tx3);margin-bottom:4px">Stored locally in browser only.</div>
       <input type="password" class="apiinput" id="apiKey" placeholder="sk-ant-api03-..." oninput="saveKey()">
       <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">Get key: <a href="https://console.anthropic.com" target="_blank" style="color:var(--ac)">console.anthropic.com</a></div>
-    </div>
-    <div class="sgrp">
-      <h3>🌐 CORS Proxy</h3>
-      <div style="font-size:.78rem;color:var(--tx2);margin-bottom:4px">Required when running from GitHub Pages.</div>
-      <select class="proxy-select" id="proxySel" onchange="saveProxy()">
-        <option value="corsproxy">corsproxy.io (recommended)</option>
-        <option value="allorigins">allorigins.win</option>
-        <option value="none">None (local/backend only)</option>
-      </select>
-      <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">Your API key goes directly to Anthropic — not stored by proxy.</div>
     </div>
     <div class="sgrp">
       <h3>⚙️ Behavior</h3>
@@ -424,10 +446,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="srow"><span class="slabel">Characters translated</span><span id="s-c" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
       <div class="srow"><span class="slabel">Files processed</span><span id="s-f" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
       <div class="srow"><span class="slabel">Memory entries</span><span id="s-m" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
-      <div style="display:flex;gap:7px;margin-top:8px;flex-direction:column">
-        <button class="btn btn-s" onclick="exportMem()" style="justify-content:center">📤 Export Memory</button>
+    </div>
+    <div class="sgrp">
+      <h3>💾 Memory Data</h3>
+      <div style="display:flex;gap:7px;flex-direction:column">
+        <button class="btn btn-s" onclick="exportMem()" style="justify-content:center">📤 Export Memory (JSON)</button>
         <button class="btn btn-s" onclick="document.getElementById('impF').click()" style="justify-content:center">📥 Import Memory</button>
         <input type="file" id="impF" accept=".json" style="display:none" onchange="importMem(event)">
+        <button class="btn btn-d" onclick="clearMem()" style="justify-content:center">🗑 Clear All Memory</button>
       </div>
     </div>
   </div>
@@ -440,18 +466,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ── PROXIES ──────────────────────────────────────────
-// Wrap Anthropic API URL through a CORS proxy so GitHub Pages can call it
-const PROXIES={
-  corsproxy: url=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
-  allorigins: url=>`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  none: url=>url
-};
-const API_URL='https://api.anthropic.com/v1/messages';
+// ── API ENDPOINT ─────────────────────────────────────
+// By default uses your Cloudflare Worker URL (set in Settings)
+// Worker handles CORS so GitHub Pages can call Anthropic API
+const DIRECT_URL='https://api.anthropic.com/v1/messages';
 
-function getProxiedUrl(){
-  const p=localStorage.getItem('atrans_proxy')||'corsproxy';
-  return PROXIES[p]?.(API_URL)||API_URL;
+function getApiUrl(){
+  const worker=localStorage.getItem('atrans_worker')||'';
+  return worker||DIRECT_URL;
 }
 
 // ── TONES ────────────────────────────────────────────
@@ -493,7 +515,6 @@ const LF={zh:'🇨🇳',vi:'🇻🇳',en:'🇬🇧'};
   renderMem();
   // load proxy setting
   const p=localStorage.getItem('atrans_proxy')||'corsproxy';
-  document.getElementById('proxySel').value=p;
   // load key
   const k=localStorage.getItem('atrans_key');
   if(k){
@@ -520,10 +541,61 @@ function quickSaveKey(){
   toast('API key saved! Ready to translate ✓','ok');
 }
 
-function saveProxy(){
-  const v=document.getElementById('proxySel').value;
+function saveProxy(v){
   localStorage.setItem('atrans_proxy',v);
-  toast('Proxy set to: '+v,'inf');
+  renderProxyCards();
+  toast('Proxy set to: '+v+'. Try translating again.','ok');
+}
+
+function saveWorkerUrl(){
+  const v=document.getElementById('workerUrl').value.trim();
+  if(v){
+    localStorage.setItem('atrans_worker',v);
+    document.getElementById('workerSaved').style.display='block';
+    document.getElementById('workerNone').style.display='none';
+    document.getElementById('corsBanner').classList.remove('show');
+    toast('Worker URL saved! Ready to translate ✓','ok');
+  }else{
+    localStorage.removeItem('atrans_worker');
+    document.getElementById('workerSaved').style.display='none';
+    document.getElementById('workerNone').style.display='block';
+    toast('Worker URL cleared','inf');
+  }
+}
+function workerUrlChanged(){
+  document.getElementById('workerSaved').style.display='none';
+  document.getElementById('workerNone').style.display='none';
+}
+function initWorkerInput(){
+  const v=localStorage.getItem('atrans_worker')||'';
+  const inp=document.getElementById('workerUrl');
+  if(inp){
+    inp.value=v;
+    if(v){document.getElementById('workerSaved').style.display='block';}
+    else{document.getElementById('workerNone').style.display='block';}
+  }
+}
+
+function renderProxyCards(){
+  const cur=localStorage.getItem('atrans_proxy')||'corsproxy';
+  const container=document.getElementById('proxyCards');
+  if(!container)return;
+  const options=[
+    {id:'corsproxy',label:'corsproxy.io',desc:'Recommended · Fast'},
+    {id:'allorigins',label:'allorigins.win',desc:'Backup option'},
+    {id:'none',label:'None',desc:'Local file only'}
+  ];
+  container.innerHTML=options.map(o=>`
+    <div onclick="saveProxy('${o.id}')" style="
+      padding:12px 14px;border-radius:10px;cursor:pointer;transition:all .18s;
+      border:2px solid ${o.id===cur?'var(--ac)':'var(--bd)'};
+      background:${o.id===cur?'rgba(0,229,180,.08)':'var(--sf)'};
+      text-align:center;
+    ">
+      <div style="font-size:.85rem;font-weight:700;color:${o.id===cur?'var(--ac)':'var(--tx)'};margin-bottom:3px">${o.label}</div>
+      <div style="font-size:.68rem;color:${o.id===cur?'var(--tx2)':'var(--tx3)'};">${o.desc}</div>
+      ${o.id===cur?'<div style="font-size:.65rem;color:var(--ac);margin-top:4px;font-weight:700">✓ ACTIVE</div>':''}
+    </div>`).join('');
 }
 
 // ── TABS ─────────────────────────────────────────────
@@ -533,7 +605,7 @@ function switchTab(t,el){
   document.getElementById('panel-'+t).classList.add('active');
   el.classList.add('active');
   if(t==='memory')renderMem();
-  if(t==='settings')refreshStats();
+  if(t==='settings'){refreshStats();renderProxyCards();initWorkerInput();}
 }
 
 // ── TONE GRID ────────────────────────────────────────
@@ -577,10 +649,10 @@ async function claude(userPrompt,tonePrompt){
   const k=localStorage.getItem('atrans_key');
   if(!k){toast('Please add your Claude API key','err');throw new Error('No API key');}
   const sys=`You are a professional translator.\nRULES:\n- Output ONLY the translated text. No explanations, no quotes, no markdown.\n- Preserve paragraph breaks and line breaks exactly.\n- TONE: ${tonePrompt}`;
-  const proxied=getProxiedUrl();
+  const apiUrl=getApiUrl();
   let r;
   try{
-    r=await fetch(proxied,{
+    r=await fetch(apiUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,
@@ -604,20 +676,8 @@ async function claude(userPrompt,tonePrompt){
 function showCorsBanner(){
   const b=document.getElementById('corsBanner');
   b.classList.add('show');
-  // Render proxy buttons inside banner
-  const pr=document.getElementById('proxyRow');
-  const cur=localStorage.getItem('atrans_proxy')||'corsproxy';
-  pr.innerHTML=Object.keys(PROXIES).map(k=>`
-    <button class="proxy-btn${k===cur?' active':''}" onclick="setBannerProxy('${k}')">${k}</button>`).join('');
 }
-function setBannerProxy(p){
-  localStorage.setItem('atrans_proxy',p);
-  document.getElementById('proxySel').value=p;
-  document.getElementById('proxyRow').querySelectorAll('.proxy-btn').forEach(b=>{
-    b.classList.toggle('active',b.textContent===p);
-  });
-  toast('Proxy set to '+p+'. Try translating again.','ok');
-}
+
 
 async function translateBatch(items,sL,tL,tp,onProg){
   const res=new Array(items.length);
