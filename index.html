@@ -5,13 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="AutoTranslate AI – Chinese, English, Vietnamese with tone control and format preservation">
 <title>AutoTranslate AI</title>
-<!-- SheetJS for Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- Mammoth for DOCX -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-<!-- docx.js for DOCX export -->
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
-<!-- PDF.js for PDF reading -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -26,7 +22,6 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 50% -5%,rgba(0,229,180,.05),transparent);pointer-events:none;z-index:0}
 .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:20px 18px}
 
-/* HEADER */
 .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;padding-bottom:16px;border-bottom:1px solid var(--bd)}
 .logo{display:flex;align-items:center;gap:11px}
 .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--ac),var(--ac2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
@@ -39,26 +34,45 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .hb2{background:rgba(74,143,255,.1);color:var(--ac2)}
 .hb3{background:rgba(245,166,35,.1);color:var(--ac3)}
 
-/* TABS */
 .tabs{display:flex;gap:3px;background:var(--sf);padding:4px;border-radius:var(--r);margin-bottom:22px}
 .tab{flex:1;padding:10px;border:none;background:transparent;color:var(--tx2);font-family:inherit;font-size:.85rem;font-weight:500;border-radius:9px;cursor:pointer;transition:all .2s}
 .tab.active{background:var(--sf2);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.5)}
 .tab:hover:not(.active){color:var(--tx)}
 .panel{display:none}.panel.active{display:block}
 
-/* LANG BAR */
 .lang-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .lsel{flex:1;padding:9px 13px;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:.88rem;border-radius:9px;cursor:pointer;outline:none;transition:border-color .2s}
 .lsel:focus{border-color:var(--ac)}
 .swap{width:36px;height:36px;border-radius:50%;background:var(--sf2);border:1px solid var(--bd);color:var(--ac);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
 .swap:hover{background:var(--ac);color:#000;transform:rotate(180deg)}
 
-/* TONE */
+/* CORS WARNING BANNER */
+.cors-banner{background:rgba(255,77,109,.07);border:1px solid rgba(255,77,109,.25);border-radius:10px;padding:13px 16px;margin-bottom:16px;font-size:.82rem;color:var(--tx2);line-height:1.6;display:none}
+.cors-banner.show{display:block}
+.cors-banner strong{color:var(--tx)}
+.cors-banner code{font-family:'JetBrains Mono',monospace;font-size:.75rem;background:rgba(255,255,255,.05);padding:1px 6px;border-radius:4px;color:var(--ac3)}
+.proxy-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.proxy-btn{padding:6px 14px;border-radius:7px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-family:inherit;font-size:.78rem;cursor:pointer;transition:all .2s}
+.proxy-btn:hover,.proxy-btn.active{border-color:var(--ac);color:var(--ac);background:rgba(0,229,180,.07)}
+.proxy-btn.active{font-weight:700}
+
+/* API NOTICE */
+.api-notice{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:14px 16px;margin-bottom:18px}
+.api-notice.saved{background:rgba(0,229,180,.06);border-color:rgba(0,229,180,.25)}
+.api-notice p{font-size:.82rem;color:var(--tx2);line-height:1.5;margin-bottom:8px}
+.api-notice p strong{color:var(--tx)}
+.api-notice a{color:var(--ac);text-decoration:none}
+.api-key-row{display:flex;gap:8px}
+.api-key-row input{flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.79rem;border-radius:7px;outline:none;transition:border-color .2s}
+.api-key-row input:focus{border-color:var(--ac)}
+.api-key-row button{padding:8px 16px;background:var(--ac);color:#000;border:none;border-radius:7px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.key-hint{font-size:.71rem;color:var(--ac);margin-top:6px;display:none}
+
 .tone-section{margin-bottom:16px}
 .tone-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.9px;color:var(--tx3);margin-bottom:9px;display:flex;align-items:center;gap:7px}
 .tone-label::after{content:'';flex:1;height:1px;background:var(--bd)}
 .tone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.tone-card{padding:12px 10px;border-radius:10px;border:1.5px solid var(--bd);background:var(--sf);cursor:pointer;transition:all .18s;text-align:center;position:relative}
+.tone-card{padding:12px 10px;border-radius:10px;border:1.5px solid var(--bd);background:var(--sf);cursor:pointer;transition:all .18s;text-align:center}
 .tone-card:hover{border-color:var(--tx2);transform:translateY(-1px)}
 .tone-card.selected{border-color:var(--ac);background:rgba(0,229,180,.07)}
 .tone-card.selected .tone-name{color:var(--ac)}
@@ -71,16 +85,39 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .custom-input{width:100%;padding:9px 13px;background:var(--sf);border:1.5px solid var(--bd);color:var(--tx);font-family:inherit;font-size:.85rem;border-radius:9px;outline:none;transition:border-color .2s}
 .custom-input:focus{border-color:var(--ac)}
 
-/* TEXT AREAS */
+/* TEXT AREAS — both input and output are textareas now */
 .ta-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
-.tbox{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.tbox{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s}
 .tbox:focus-within{border-color:rgba(0,229,180,.4)}
-.tbox-hdr{padding:9px 13px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px}
-.tinput{width:100%;height:200px;padding:13px;background:transparent;border:none;outline:none;color:var(--tx);font-family:'Be Vietnam Pro',sans-serif;font-size:.88rem;line-height:1.65;resize:none}
-.toutput{width:100%;min-height:200px;padding:13px;font-size:.88rem;line-height:1.65;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.tbox-hdr{padding:9px 13px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;flex-shrink:0}
+.tinput{flex:1;width:100%;height:220px;padding:13px;background:transparent;border:none;outline:none;color:var(--tx);font-family:'Be Vietnam Pro',sans-serif;font-size:.88rem;line-height:1.65;resize:none}
+
+/* OUTPUT is now a contenteditable div styled like textarea */
+.toutput{
+  flex:1;width:100%;min-height:220px;padding:13px;
+  background:transparent;border:none;outline:none;
+  color:var(--tx);font-family:'Be Vietnam Pro',sans-serif;font-size:.88rem;line-height:1.65;
+  overflow-y:auto;white-space:pre-wrap;word-break:break-word;
+  cursor:text;
+}
+.toutput:focus{background:rgba(0,229,180,.02)}
+.toutput.placeholder{color:var(--tx3);font-size:.83rem}
+.toutput.editable-hint::after{
+  content:'✏ Click to edit';position:absolute;bottom:10px;right:12px;
+  font-size:.65rem;color:var(--tx3);pointer-events:none;
+}
+.tbox-out{position:relative}
+
+/* Edit mode indicator */
+.edit-badge{
+  display:none;padding:2px 8px;border-radius:20px;font-size:.67rem;font-weight:600;
+  background:rgba(245,166,35,.12);color:var(--ac3);border:1px solid rgba(245,166,35,.25);
+}
+.edit-badge.show{display:inline-block}
+.edit-actions{display:flex;gap:5px;align-items:center}
+
 .tactions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 
-/* BUTTONS */
 .btn{padding:9px 20px;border-radius:9px;border:none;font-family:inherit;font-size:.87rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px}
 .btn-p{background:var(--ac);color:#000}
 .btn-p:hover{background:#00ccaa;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,229,180,.3)}
@@ -91,35 +128,20 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
 .btn-sm{padding:3px 9px;font-size:.7rem;border-radius:6px;background:var(--sf2);border:1px solid var(--bd);color:var(--tx2);cursor:pointer;transition:all .15s}
 .btn-sm:hover{color:var(--ac);border-color:var(--ac)}
+.btn-sm.warn{color:var(--ac3);border-color:rgba(245,166,35,.3)}
+.btn-sm.warn:hover{background:rgba(245,166,35,.1)}
 
-/* API NOTICE */
-.api-notice{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:14px 16px;margin-bottom:18px}
-.api-notice.saved{background:rgba(0,229,180,.06);border-color:rgba(0,229,180,.25)}
-.api-notice p{font-size:.82rem;color:var(--tx2);line-height:1.5;margin-bottom:8px}
-.api-notice p strong{color:var(--tx)}
-.api-notice a{color:var(--ac);text-decoration:none}
-.api-notice a:hover{text-decoration:underline}
-.api-key-row{display:flex;gap:8px}
-.api-key-row input{flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.79rem;border-radius:7px;outline:none;transition:border-color .2s}
-.api-key-row input:focus{border-color:var(--ac)}
-.api-key-row button{padding:8px 16px;background:var(--ac);color:#000;border:none;border-radius:7px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap}
-.key-hint{font-size:.71rem;color:var(--ac);margin-top:6px;display:none}
-
-/* FILE ZONE */
 .drop-zone{border:2px dashed var(--bd);border-radius:var(--r);padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:13px;background:var(--sf)}
 .drop-zone:hover,.drop-zone.over{border-color:var(--ac);background:rgba(0,229,180,.04)}
 .drop-icon{font-size:2.6rem;margin-bottom:9px}
 .drop-zone h3{font-size:.92rem;margin-bottom:4px}
 .drop-zone p{font-size:.77rem;color:var(--tx3)}
 .ftypes{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.ft{padding:3px 9px;border-radius:20px;font-size:.67rem;font-family:'JetBrains Mono',monospace}
-.ft{background:var(--sf2);color:var(--tx3)}
-.ft.ft-pdf{background:rgba(255,77,109,.12);color:#ff8a9a}
-.ft.ft-doc{background:rgba(74,143,255,.12);color:var(--ac2)}
-.ft.ft-xl{background:rgba(0,229,180,.12);color:var(--ac)}
-.ft.ft-txt{background:rgba(255,255,255,.06);color:var(--tx3)}
+.ft{padding:3px 9px;border-radius:20px;font-size:.67rem;font-family:'JetBrains Mono',monospace;background:var(--sf2);color:var(--tx3)}
+.ft-pdf{background:rgba(255,77,109,.12);color:#ff8a9a}
+.ft-doc{background:rgba(74,143,255,.12);color:var(--ac2)}
+.ft-xl{background:rgba(0,229,180,.12);color:var(--ac)}
 
-/* FILE CARDS */
 .flist{display:flex;flex-direction:column;gap:8px;margin-bottom:13px}
 .fcard{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
 .fcard.done{border-color:rgba(0,229,180,.3)}
@@ -130,7 +152,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .fname{font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fmeta{font-size:.71rem;color:var(--tx3);font-family:'JetBrains Mono',monospace;margin-top:2px}
 .ftone-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.67rem;font-weight:600;background:rgba(0,229,180,.1);color:var(--ac);margin-top:4px}
-.fstatus{font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;flex-shrink:0;white-space:nowrap}
+.fstatus{font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;flex-shrink:0}
 .st-pending{background:rgba(245,166,35,.14);color:var(--ac3)}
 .st-reading{background:rgba(74,143,255,.14);color:var(--ac2)}
 .st-translating{background:rgba(0,229,180,.14);color:var(--ac)}
@@ -139,12 +161,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .progbar{height:3px;background:var(--bd);margin-top:6px;border-radius:3px;overflow:hidden}
 .progfill{height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .3s;border-radius:3px}
 .ferror-msg{padding:6px 14px 10px;font-size:.75rem;color:var(--red)}
-
-/* PDF INFO BOX */
-.pdf-info{background:rgba(74,143,255,.06);border:1px solid rgba(74,143,255,.18);border-radius:8px;padding:8px 13px;margin:8px 14px;font-size:.75rem;color:var(--tx2);line-height:1.5}
+.pdf-info{background:rgba(74,143,255,.06);border:1px solid rgba(74,143,255,.18);border-radius:8px;padding:8px 13px;margin:0 14px 10px;font-size:.75rem;color:var(--tx2);line-height:1.5}
 .pdf-info strong{color:var(--ac2)}
-
-/* PREVIEW TABLE */
 .fpreview{padding:9px 13px 13px;border-top:1px solid var(--bd);display:none}
 .fpreview.show{display:block}
 .preview-label{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
@@ -154,10 +172,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .ptbl td{padding:4px 9px;border:1px solid var(--bd);color:var(--tx);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .factions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
 
-/* TONE INDICATOR */
 .tone-ind{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:600;background:rgba(0,229,180,.1);color:var(--ac);border:1px solid rgba(0,229,180,.2)}
 
-/* MEMORY */
 .mem-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
 .msearch{width:100%;padding:9px 13px;margin-bottom:13px;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:.87rem;border-radius:9px;outline:none}
 .msearch:focus{border-color:var(--ac)}
@@ -176,7 +192,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .empty{text-align:center;padding:50px 20px;color:var(--tx3)}
 .empty .ei{font-size:2.8rem;margin-bottom:10px}
 
-/* SETTINGS */
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 .sgrp{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px}
 .sgrp h3{font-size:.7rem;text-transform:uppercase;letter-spacing:.9px;color:var(--tx3);margin-bottom:10px}
@@ -189,7 +204,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .apiinput{width:100%;padding:8px 11px;margin-top:7px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;border-radius:7px;outline:none}
 .apiinput:focus{border-color:var(--ac)}
 
-/* SPINNER / TOAST */
+/* proxy selector in settings */
+.proxy-select{width:100%;padding:7px 10px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;border-radius:7px;outline:none;margin-top:6px;cursor:pointer}
+.proxy-select:focus{border-color:var(--ac)}
+
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(0,229,180,.2);border-top-color:var(--ac);animation:sp .6s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 .toasts{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px}
@@ -212,7 +230,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <body>
 <div class="wrap">
 
-<!-- HEADER -->
 <div class="hdr">
   <div class="logo">
     <div class="logo-icon">🌐</div>
@@ -223,20 +240,27 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
   <div class="hbadges">
     <span class="hb hb1">🎯 Tone Control</span>
-    <span class="hb hb2">📊 XLSX / DOCX / PDF</span>
-    <span class="hb hb3">💾 Auto Memory</span>
+    <span class="hb hb2">📄 PDF / XLSX / DOCX</span>
+    <span class="hb hb3">✏️ Editable Output</span>
   </div>
 </div>
 
-<!-- API KEY NOTICE -->
+<!-- API KEY -->
 <div class="api-notice" id="apiNotice">
-  <p><strong>🔑 Enter your Claude API key to start translating.</strong><br>
-  Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Stored locally in your browser only.</p>
+  <p><strong>🔑 Enter your Claude API key to start.</strong><br>
+  Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Stored only in your browser.</p>
   <div class="api-key-row">
-    <input type="password" id="quickApiKey" placeholder="sk-ant-api03-..." />
+    <input type="password" id="quickApiKey" placeholder="sk-ant-api03-...">
     <button onclick="quickSaveKey()">Save Key</button>
   </div>
   <div class="key-hint" id="keyHint">✓ Key saved! You can now translate.</div>
+</div>
+
+<!-- CORS WARNING -->
+<div class="cors-banner" id="corsBanner">
+  <strong>⚠ Connection blocked (CORS error)</strong> — Your browser prevents direct calls to Anthropic's API from a webpage.<br>
+  <strong>Fix:</strong> Select a proxy below, or run the app locally with a backend. The proxy forwards your request securely — your API key is sent directly to Anthropic, not stored by the proxy.
+  <div class="proxy-row" id="proxyRow"></div>
 </div>
 
 <!-- TABS -->
@@ -255,43 +279,57 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <option value="en">🇬🇧 English</option>
       <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
     </select>
-    <button class="swap" onclick="swapLangs()" title="Swap">⇄</button>
+    <button class="swap" onclick="swapLangs()">⇄</button>
     <select class="lsel" id="tgtL">
       <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
       <option value="en">🇬🇧 English</option>
       <option value="zh">🇨🇳 Chinese (中文)</option>
     </select>
   </div>
+
   <div class="tone-section">
     <div class="tone-label">🎨 Translation Tone</div>
     <div class="tone-grid" id="toneGrid"></div>
     <div class="custom-wrap" id="customWrap">
-      <input class="custom-input" id="customTone" placeholder="Describe your tone, e.g.: Warm and encouraging, like a mentor...">
+      <input class="custom-input" id="customTone" placeholder="Describe your tone...">
     </div>
   </div>
+
   <div class="ta-grid">
     <div class="tbox">
       <div class="tbox-hdr">
         <span>Source Text</span>
         <span id="cc" style="font-family:'JetBrains Mono';color:var(--ac);font-size:.68rem">0 / 5000</span>
       </div>
-      <textarea class="tinput" id="srcTxt" maxlength="5000" placeholder="Nhập hoặc dán văn bản...&#10;Paste text here..."></textarea>
+      <textarea class="tinput" id="srcTxt" maxlength="5000"
+        placeholder="Nhập hoặc dán văn bản...&#10;Paste Chinese / English / Vietnamese here..."></textarea>
     </div>
-    <div class="tbox">
+
+    <!-- OUTPUT BOX — editable -->
+    <div class="tbox tbox-out" id="tboxOut">
       <div class="tbox-hdr">
-        <span>Translation</span>
-        <div style="display:flex;gap:6px;align-items:center">
+        <span>Translation <span class="edit-badge" id="editBadge">✏ Editing</span></span>
+        <div class="edit-actions">
           <span id="activeToneTag"></span>
+          <button class="btn-sm warn" id="retranslateBtn" onclick="retranslate()" style="display:none" title="Re-translate source">↺ Re-translate</button>
           <button class="btn-sm" onclick="copyOut()">Copy</button>
         </div>
       </div>
-      <div class="toutput" id="tgtTxt"><span style="color:var(--tx3);font-size:.83rem">Bản dịch hiển thị ở đây...<br>Translation will appear here...</span></div>
+      <div class="toutput placeholder" id="tgtTxt"
+        contenteditable="true"
+        spellcheck="false"
+        data-placeholder="Bản dịch hiển thị ở đây — click để chỉnh sửa...&#10;Translation appears here — click to edit..."
+        onInput="onOutputEdit()"
+        onFocus="onOutputFocus()"
+        onBlur="onOutputBlur()">
+      </div>
     </div>
   </div>
+
   <div class="tactions">
     <button class="btn btn-s" onclick="clearTxt()">🗑 Clear</button>
     <button class="btn btn-p" id="txBtn" onclick="translateText()">⚡ Translate</button>
-    <button class="btn btn-s" onclick="saveMemory()">💾 Save</button>
+    <button class="btn btn-s" onclick="saveMemory()">💾 Save to Memory</button>
   </div>
 </div>
 
@@ -322,15 +360,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     ondragover="dOver(event)" ondrop="dDrop(event)" ondragleave="dLeave()">
     <div class="drop-icon">📂</div>
     <h3>Thả file hoặc nhấn để chọn</h3>
-    <p>Giữ nguyên định dạng · Xuất đúng format gốc</p>
+    <p>Giữ nguyên định dạng · PDF exported as .txt</p>
     <div class="ftypes">
       <span class="ft ft-pdf">.pdf</span>
       <span class="ft ft-doc">.docx</span>
       <span class="ft ft-xl">.xlsx</span>
       <span class="ft ft-xl">.csv</span>
-      <span class="ft ft-txt">.txt</span>
-      <span class="ft ft-txt">.md</span>
-      <span class="ft ft-txt">.json</span>
+      <span class="ft">.txt</span>
+      <span class="ft">.md</span>
+      <span class="ft">.json</span>
     </div>
   </div>
   <input type="file" id="fi" multiple
@@ -363,13 +401,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <h3>🔑 Claude API Key</h3>
       <div style="font-size:.78rem;color:var(--tx3);margin-bottom:4px">Stored locally, never shared.</div>
       <input type="password" class="apiinput" id="apiKey" placeholder="sk-ant-api03-..." oninput="saveKey()">
-      <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--ac)">console.anthropic.com</a></div>
+      <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">Get key: <a href="https://console.anthropic.com" target="_blank" style="color:var(--ac)">console.anthropic.com</a></div>
+    </div>
+    <div class="sgrp">
+      <h3>🌐 CORS Proxy</h3>
+      <div style="font-size:.78rem;color:var(--tx2);margin-bottom:4px">Required when running from GitHub Pages.</div>
+      <select class="proxy-select" id="proxySel" onchange="saveProxy()">
+        <option value="corsproxy">corsproxy.io (recommended)</option>
+        <option value="allorigins">allorigins.win</option>
+        <option value="none">None (local/backend only)</option>
+      </select>
+      <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">Your API key goes directly to Anthropic — not stored by proxy.</div>
     </div>
     <div class="sgrp">
       <h3>⚙️ Behavior</h3>
       <div class="srow"><span class="slabel">Auto-save to memory</span><div class="tog on" id="t-autoSave" onclick="togSet('autoSave')"></div></div>
       <div class="srow"><span class="slabel">Parallel translation</span><div class="tog on" id="t-parallel" onclick="togSet('parallel')"></div></div>
-      <div class="srow"><span class="slabel">PDF: export as .txt</span><div class="tog on" id="t-pdfTxt" onclick="togSet('pdfTxt')"></div></div>
     </div>
     <div class="sgrp">
       <h3>📊 Statistics</h3>
@@ -377,58 +424,64 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="srow"><span class="slabel">Characters translated</span><span id="s-c" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
       <div class="srow"><span class="slabel">Files processed</span><span id="s-f" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
       <div class="srow"><span class="slabel">Memory entries</span><span id="s-m" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
-    </div>
-    <div class="sgrp">
-      <h3>💾 Data</h3>
-      <div style="display:flex;flex-direction:column;gap:7px">
-        <button class="btn btn-s" onclick="exportMem()" style="width:100%;justify-content:center">📤 Export Memory (JSON)</button>
-        <button class="btn btn-s" onclick="document.getElementById('impF').click()" style="width:100%;justify-content:center">📥 Import Memory</button>
+      <div style="display:flex;gap:7px;margin-top:8px;flex-direction:column">
+        <button class="btn btn-s" onclick="exportMem()" style="justify-content:center">📤 Export Memory</button>
+        <button class="btn btn-s" onclick="document.getElementById('impF').click()" style="justify-content:center">📥 Import Memory</button>
         <input type="file" id="impF" accept=".json" style="display:none" onchange="importMem(event)">
-        <button class="btn btn-d" onclick="clearMem()" style="width:100%;justify-content:center">🗑 Clear All Memory</button>
       </div>
     </div>
   </div>
 </div>
 
-<div class="footer">
-  Built with ❤️ using <a href="https://anthropic.com" target="_blank">Claude AI</a>
-</div>
+<div class="footer">Built with ❤️ using <a href="https://anthropic.com" target="_blank">Claude AI</a></div>
 </div>
 <div class="toasts" id="toasts"></div>
 
 <script>
-// ── PDF.js worker setup ──────────────────────────────
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── PROXIES ──────────────────────────────────────────
+// Wrap Anthropic API URL through a CORS proxy so GitHub Pages can call it
+const PROXIES={
+  corsproxy: url=>`https://corsproxy.io/?${encodeURIComponent(url)}`,
+  allorigins: url=>`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  none: url=>url
+};
+const API_URL='https://api.anthropic.com/v1/messages';
+
+function getProxiedUrl(){
+  const p=localStorage.getItem('atrans_proxy')||'corsproxy';
+  return PROXIES[p]?.(API_URL)||API_URL;
+}
 
 // ── TONES ────────────────────────────────────────────
 const TONES=[
   {id:'business',icon:'💼',name:'Business',desc:'Formal, professional & precise',
-   prompt:'Use a professional business tone. Formal, clear, authoritative. Avoid colloquialisms. Use industry-appropriate terminology.'},
+   prompt:'Use a professional business tone. Formal, clear, authoritative. Industry-appropriate terminology.'},
   {id:'casual',icon:'😊',name:'Casual',desc:'Friendly, relaxed & conversational',
-   prompt:'Use a casual, friendly conversational tone. Natural and relaxed like talking to a friend. Contractions are fine.'},
+   prompt:'Use a casual, friendly tone. Natural and relaxed like talking to a friend. Contractions are fine.'},
   {id:'academic',icon:'🎓',name:'Academic',desc:'Scholarly, precise & objective',
-   prompt:'Use an academic/scholarly tone. Precise, objective, and formal. Maintain a neutral, analytical perspective suitable for academic papers.'},
+   prompt:'Use an academic/scholarly tone. Precise, objective, formal. Neutral, analytical perspective.'},
   {id:'marketing',icon:'🚀',name:'Marketing',desc:'Persuasive, engaging & energetic',
-   prompt:'Use a dynamic marketing tone. Persuasive, enthusiastic, and engaging. Active voice. Focus on benefits and emotional appeal.'},
+   prompt:'Use a dynamic marketing tone. Persuasive, enthusiastic. Focus on benefits and emotional appeal.'},
   {id:'legal',icon:'⚖️',name:'Legal',desc:'Precise, formal & unambiguous',
-   prompt:'Use a precise legal tone. Unambiguous and formally structured. Use exact legal terminology. No contractions.'},
+   prompt:'Use a precise legal tone. Unambiguous, formally structured. Exact legal terminology. No contractions.'},
   {id:'simple',icon:'🌱',name:'Simple',desc:'Clear, easy & accessible',
-   prompt:'Use very simple, easy-to-understand language. Short sentences. Avoid jargon. Maximum clarity for general public or beginners.'},
+   prompt:'Use very simple language. Short sentences. No jargon. Maximum clarity for general public.'},
   {id:'journalistic',icon:'📰',name:'News',desc:'Objective, concise & factual',
-   prompt:'Use a journalistic tone. Concise, factual, objective. Lead with the most important info. Active voice. No bias.'},
+   prompt:'Journalistic tone. Concise, factual, objective. Lead with most important info. Active voice.'},
   {id:'custom',icon:'✏️',name:'Custom',desc:'Define your own tone',prompt:null}
 ];
 
 // ── STATE ────────────────────────────────────────────
-const MK='atrans_mem6',SK='atrans_stat6',SEK='atrans_set6';
+const MK='atrans_mem7',SK='atrans_stat7',SEK='atrans_set7';
 let memory=JSON.parse(localStorage.getItem(MK)||'[]');
 let stats=JSON.parse(localStorage.getItem(SK)||'{"t":0,"c":0,"f":0}');
-let sett=JSON.parse(localStorage.getItem(SEK)||'{"autoSave":true,"parallel":true,"pdfTxt":true}');
+let sett=JSON.parse(localStorage.getItem(SEK)||'{"autoSave":true,"parallel":true}');
 let files=[];
 let lastTr=null;
-let selTone='business';
-let fileTone='business';
+let selTone='business',fileTone='business';
+let outputEdited=false; // track if user edited output
 const LN={zh:'Chinese',vi:'Vietnamese',en:'English'};
 const LF={zh:'🇨🇳',vi:'🇻🇳',en:'🇬🇧'};
 
@@ -438,6 +491,10 @@ const LF={zh:'🇨🇳',vi:'🇻🇳',en:'🇬🇧'};
   renderToneGrid('fileToneGrid','file');
   applySettings();
   renderMem();
+  // load proxy setting
+  const p=localStorage.getItem('atrans_proxy')||'corsproxy';
+  document.getElementById('proxySel').value=p;
+  // load key
   const k=localStorage.getItem('atrans_key');
   if(k){
     document.getElementById('apiKey').value=k;
@@ -448,6 +505,8 @@ const LF={zh:'🇨🇳',vi:'🇻🇳',en:'🇬🇧'};
   document.getElementById('srcTxt').addEventListener('input',e=>{
     document.getElementById('cc').textContent=e.target.value.length+' / 5000';
   });
+  // set placeholder on contenteditable
+  setOutputPlaceholder();
 })();
 
 function quickSaveKey(){
@@ -457,7 +516,14 @@ function quickSaveKey(){
   document.getElementById('apiKey').value=k;
   document.getElementById('keyHint').style.display='block';
   document.getElementById('apiNotice').classList.add('saved');
+  document.getElementById('corsBanner').classList.remove('show');
   toast('API key saved! Ready to translate ✓','ok');
+}
+
+function saveProxy(){
+  const v=document.getElementById('proxySel').value;
+  localStorage.setItem('atrans_proxy',v);
+  toast('Proxy set to: '+v,'inf');
 }
 
 // ── TABS ─────────────────────────────────────────────
@@ -509,34 +575,123 @@ function getToneLabel(panel){
 // ── CLAUDE API ───────────────────────────────────────
 async function claude(userPrompt,tonePrompt){
   const k=localStorage.getItem('atrans_key');
-  if(!k){toast('Please add your Claude API key in Settings','err');throw new Error('No API key');}
-  const sys=`You are a professional translator.\nRULES:\n- Output ONLY the translated text.\n- No explanations, no quotes, no markdown.\n- Preserve paragraph breaks and line breaks exactly.\n- TONE: ${tonePrompt}`;
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':k},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,
-      messages:[{role:'user',content:userPrompt}]})
+  if(!k){toast('Please add your Claude API key','err');throw new Error('No API key');}
+  const sys=`You are a professional translator.\nRULES:\n- Output ONLY the translated text. No explanations, no quotes, no markdown.\n- Preserve paragraph breaks and line breaks exactly.\n- TONE: ${tonePrompt}`;
+  const proxied=getProxiedUrl();
+  let r;
+  try{
+    r=await fetch(proxied,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,
+        messages:[{role:'user',content:userPrompt}]})
+    });
+  }catch(err){
+    // Show CORS banner on network/fetch error
+    showCorsBanner();
+    throw new Error('Network error – see CORS fix above');
+  }
+  if(!r.ok){
+    const e=await r.json().catch(()=>({}));
+    const msg=e.error?.message||'API error '+r.status;
+    if(r.status===0||msg.includes('CORS')||msg.includes('fetch'))showCorsBanner();
+    throw new Error(msg);
+  }
+  const d=await r.json();
+  return d.content[0].text.trim();
+}
+
+function showCorsBanner(){
+  const b=document.getElementById('corsBanner');
+  b.classList.add('show');
+  // Render proxy buttons inside banner
+  const pr=document.getElementById('proxyRow');
+  const cur=localStorage.getItem('atrans_proxy')||'corsproxy';
+  pr.innerHTML=Object.keys(PROXIES).map(k=>`
+    <button class="proxy-btn${k===cur?' active':''}" onclick="setBannerProxy('${k}')">${k}</button>`).join('');
+}
+function setBannerProxy(p){
+  localStorage.setItem('atrans_proxy',p);
+  document.getElementById('proxySel').value=p;
+  document.getElementById('proxyRow').querySelectorAll('.proxy-btn').forEach(b=>{
+    b.classList.toggle('active',b.textContent===p);
   });
-  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'API '+r.status);}
-  return (await r.json()).content[0].text.trim();
+  toast('Proxy set to '+p+'. Try translating again.','ok');
 }
 
 async function translateBatch(items,sL,tL,tp,onProg){
   const res=new Array(items.length);
   if(sett.parallel){
     await Promise.all(items.map((txt,i)=>
-      claude(`Translate this ${LN[sL]} text to ${LN[tL]}:\n${txt}`,tp)
+      claude(`Translate this ${LN[sL]} to ${LN[tL]}:\n${txt}`,tp)
         .then(r=>{res[i]=r;onProg&&onProg(i,items.length);})
         .catch(()=>{res[i]=txt;})
     ));
   }else{
     for(let i=0;i<items.length;i++){
-      try{res[i]=await claude(`Translate this ${LN[sL]} text to ${LN[tL]}:\n${items[i]}`,tp);}
+      try{res[i]=await claude(`Translate this ${LN[sL]} to ${LN[tL]}:\n${items[i]}`,tp);}
       catch{res[i]=items[i];}
       onProg&&onProg(i,items.length);
     }
   }
   return res;
+}
+
+// ── OUTPUT BOX (editable) ────────────────────────────
+function setOutputPlaceholder(){
+  const el=document.getElementById('tgtTxt');
+  if(!el.textContent.trim()){
+    el.classList.add('placeholder');
+    el.innerHTML='';
+  }
+}
+function getOutputText(){
+  const el=document.getElementById('tgtTxt');
+  if(el.classList.contains('placeholder'))return'';
+  return el.innerText||el.textContent||'';
+}
+function setOutputText(text){
+  const el=document.getElementById('tgtTxt');
+  el.classList.remove('placeholder');
+  el.textContent=text;
+  outputEdited=false;
+  document.getElementById('editBadge').classList.remove('show');
+  document.getElementById('retranslateBtn').style.display='none';
+}
+function setOutputLoading(msg){
+  const el=document.getElementById('tgtTxt');
+  el.classList.remove('placeholder');
+  el.innerHTML=`<span style="display:flex;gap:8px;align-items:center;color:var(--tx3)"><span class="spin"></span>${msg}</span>`;
+  outputEdited=false;
+}
+function setOutputError(msg){
+  const el=document.getElementById('tgtTxt');
+  el.classList.remove('placeholder');
+  el.innerHTML=`<span style="color:var(--red)">⚠ ${esc(msg)}</span>`;
+}
+function onOutputEdit(){
+  if(!outputEdited&&getOutputText()){
+    outputEdited=true;
+    document.getElementById('editBadge').classList.add('show');
+    document.getElementById('retranslateBtn').style.display='inline-flex';
+  }
+}
+function onOutputFocus(){
+  const el=document.getElementById('tgtTxt');
+  if(el.classList.contains('placeholder')){
+    el.classList.remove('placeholder');
+    el.innerHTML='';
+  }
+}
+function onOutputBlur(){
+  if(!getOutputText().trim()) setOutputPlaceholder();
+}
+
+function retranslate(){
+  outputEdited=false;
+  document.getElementById('editBadge').classList.remove('show');
+  document.getElementById('retranslateBtn').style.display='none';
+  translateText();
 }
 
 // ── TEXT TRANSLATE ────────────────────────────────────
@@ -546,56 +701,67 @@ async function translateText(){
   const sL=document.getElementById('srcL').value,tL=document.getElementById('tgtL').value;
   if(sL===tL){toast('Source and target must differ','err');return;}
   const tp=getTonePrompt('text'),tl=getToneLabel('text');
-  const btn=document.getElementById('txBtn'),out=document.getElementById('tgtTxt');
+  const btn=document.getElementById('txBtn');
   btn.disabled=true;btn.innerHTML='<div class="spin"></div> Translating...';
-  out.innerHTML='<div style="display:flex;gap:8px;align-items:center;color:var(--tx3)"><div class="spin"></div> Translating with '+tl+'...</div>';
+  setOutputLoading('Translating with '+tl+'...');
   document.getElementById('activeToneTag').innerHTML='';
   try{
     const res=await claude(`Translate the following ${LN[sL]} text to ${LN[tL]}:\n\n${src}`,tp);
-    out.textContent=res;
+    setOutputText(res);
     document.getElementById('activeToneTag').innerHTML=`<span class="tone-ind">${tl}</span>`;
     lastTr={src,res,sL,tL,tone:tl,ts:Date.now()};
     stats.t++;stats.c+=src.length;saveStat();
     if(sett.autoSave){addMem(src,res,sL,tL,tl);toast('Translated & saved ✓','ok');}
     else toast('Done!','ok');
   }catch(e){
-    out.innerHTML=`<span style="color:var(--red)">⚠ ${esc(e.message)}</span>`;
+    setOutputError(e.message);
     if(e.message!=='No API key')toast(e.message,'err');
   }finally{btn.disabled=false;btn.innerHTML='⚡ Translate';}
 }
+
 function swapLangs(){
   const s=document.getElementById('srcL'),t=document.getElementById('tgtL');
   [s.value,t.value]=[t.value,s.value];
-  const si=document.getElementById('srcTxt').value,ti=document.getElementById('tgtTxt').textContent;
-  if(ti&&!ti.includes('Bản dịch')&&!ti.includes('Translation will')){
+  const si=document.getElementById('srcTxt').value,ti=getOutputText();
+  if(ti){
     document.getElementById('srcTxt').value=ti;
-    document.getElementById('tgtTxt').textContent=si;
+    setOutputText(si);
     document.getElementById('cc').textContent=ti.length+' / 5000';
   }
 }
 function clearTxt(){
   document.getElementById('srcTxt').value='';
-  document.getElementById('tgtTxt').innerHTML='<span style="color:var(--tx3);font-size:.83rem">Bản dịch hiển thị ở đây...<br>Translation will appear here...</span>';
+  setOutputPlaceholder();
   document.getElementById('cc').textContent='0 / 5000';
   document.getElementById('activeToneTag').innerHTML='';
-  lastTr=null;
+  document.getElementById('editBadge').classList.remove('show');
+  document.getElementById('retranslateBtn').style.display='none';
+  lastTr=null;outputEdited=false;
 }
-function copyOut(){navigator.clipboard.writeText(document.getElementById('tgtTxt').textContent).then(()=>toast('Copied!','ok'));}
-function saveMemory(){if(!lastTr){toast('Translate first','err');return;}addMem(lastTr.src,lastTr.res,lastTr.sL,lastTr.tL,lastTr.tone);toast('Saved!','ok');}
+function copyOut(){
+  const t=getOutputText();
+  if(!t){toast('Nothing to copy','err');return;}
+  navigator.clipboard.writeText(t).then(()=>toast('Copied!','ok'));
+}
+function saveMemory(){
+  if(!lastTr){toast('Translate first','err');return;}
+  // Save possibly-edited output
+  const edited=getOutputText();
+  addMem(lastTr.src,edited||lastTr.res,lastTr.sL,lastTr.tL,lastTr.tone);
+  toast('Saved!','ok');
+}
 
 // ── FILE HANDLING ─────────────────────────────────────
 function dOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('over');}
 function dLeave(){document.getElementById('dropZone').classList.remove('over');}
 function dDrop(e){e.preventDefault();dLeave();addFiles(Array.from(e.dataTransfer.files));}
 function onFileInput(e){addFiles(Array.from(e.target.files));e.target.value='';}
-
 function addFiles(nf){
   nf.forEach(f=>{
     if(!files.find(x=>x.name===f.name&&x.size===f.size))
       files.push({file:f,name:f.name,ext:f.name.split('.').pop().toLowerCase(),
-        size:f.size,status:'pending',progress:0,
-        wb:null,cellMap:null,plainText:null,translatedText:null,
-        preview:null,pdfPages:0,error:null});
+        size:f.size,status:'pending',progress:0,wb:null,cellMap:null,
+        plainText:null,translatedText:null,preview:null,pdfPages:0,error:null});
   });
   renderFiles();
 }
@@ -614,7 +780,7 @@ function renderFiles(){
         <div class="finfo">
           <div class="fname" title="${esc(f.name)}">${esc(f.name)}</div>
           <div class="fmeta">${fmtSz(f.size)} · .${f.ext.toUpperCase()}${
-            f.ext==='pdf'&&f.pdfPages?' · '+f.pdfPages+' pages':
+            f.pdfPages?' · '+f.pdfPages+' pages':
             f.cellMap?' · '+f.cellMap.length+' cells':
             f.rows?' · '+f.rows+' lines':''}</div>
           <div class="ftone-tag">${tl}</div>
@@ -623,66 +789,53 @@ function renderFiles(){
         <span class="fstatus st-${f.status}">${fStat(f.status)}</span>
         <button onclick="removeFile(${i})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:1rem;padding:0 6px;flex-shrink:0">✕</button>
       </div>
-      ${f.ext==='pdf'&&f.status==='pending'?`
-        <div class="pdf-info">
-          <strong>PDF support:</strong> Text will be extracted from all pages and exported as a translated <strong>.txt</strong> file preserving paragraph structure.
-          ${f.pdfPages?'<br>📄 '+f.pdfPages+' pages detected.':''}
-        </div>`:''}
+      ${f.ext==='pdf'&&f.status==='pending'?`<div class="pdf-info"><strong>PDF:</strong> Text extracted from all pages, exported as translated <strong>.txt</strong> file.</div>`:''}
       ${f.error?`<div class="ferror-msg">⚠ ${esc(f.error)}</div>`:''}
       ${f.preview?`<div class="fpreview show"><div class="preview-label">Preview</div><div class="preview-scroll">${f.preview}</div></div>`:''}
     </div>`).join('');
 }
-
 function fIcon(e){return{pdf:'📄',xlsx:'📊',xls:'📊',csv:'📋',docx:'📝',doc:'📝',txt:'📃',md:'📑',json:'🗂',html:'🌐'}[e]||'📄';}
 function fmtSz(b){return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB';}
 function fStat(s){return{pending:'Pending',reading:'Reading...',translating:'Translating...',done:'✓ Done',error:'✗ Error'}[s];}
 
-// ── READ FILES ────────────────────────────────────────
 async function readFile(f){
   f.status='reading';f.progress=10;renderFiles();
   try{
-    if(f.ext==='pdf') return await readPDF(f);
-    if(['xlsx','xls'].includes(f.ext)) return await readXLSX(f);
-    if(f.ext==='csv') return await readCSV(f);
-    if(['docx','doc'].includes(f.ext)) return await readDOCX(f);
+    if(f.ext==='pdf')return await readPDF(f);
+    if(['xlsx','xls'].includes(f.ext))return await readXLSX(f);
+    if(f.ext==='csv')return await readCSV(f);
+    if(['docx','doc'].includes(f.ext))return await readDOCX(f);
     return await readText(f);
   }catch(e){f.status='error';f.error=e.message;renderFiles();return false;}
 }
 
-// PDF: use PDF.js to extract text page by page
 async function readPDF(f){
   const buf=await f.file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   f.pdfPages=pdf.numPages;
-  const pageTexts=[];
+  const pages=[];
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
     const content=await page.getTextContent();
-    // Group text items into lines by y-position
     const lines={};
     content.items.forEach(item=>{
       const y=Math.round(item.transform[5]);
       if(!lines[y])lines[y]=[];
       lines[y].push(item.str);
     });
-    const sortedY=Object.keys(lines).map(Number).sort((a,b)=>b-a);
-    const pageText=sortedY.map(y=>lines[y].join(' ')).join('\n');
-    pageTexts.push(`--- Page ${p} ---\n${pageText}`);
-    f.progress=10+Math.round((p/pdf.numPages)*20);
-    renderFiles();
+    const sorted=Object.keys(lines).map(Number).sort((a,b)=>b-a);
+    pages.push(`--- Page ${p} ---\n${sorted.map(y=>lines[y].join(' ')).join('\n')}`);
+    f.progress=10+Math.round(p/pdf.numPages*20);renderFiles();
   }
-  f.plainText=pageTexts.join('\n\n');
+  f.plainText=pages.join('\n\n');
   f.rows=f.plainText.split('\n').filter(l=>l.trim()).length;
-  // Build preview from first page text
-  const firstLines=pageTexts[0]?.split('\n').filter(l=>l.trim()).slice(0,6)||[];
-  f.preview=`<div style="font-size:.73rem;color:var(--tx2);line-height:1.6">${firstLines.map(l=>esc(l.substring(0,80))).join('<br>')}</div>`;
-  f.status='pending';f.progress=0;renderFiles();
-  return true;
+  const preview=pages[0]?.split('\n').filter(l=>l.trim()&&!l.startsWith('---')).slice(0,5)||[];
+  f.preview=`<div style="font-size:.73rem;color:var(--tx2);line-height:1.6">${preview.map(l=>esc(l.substring(0,80))).join('<br>')}</div>`;
+  f.status='pending';f.progress=0;renderFiles();return true;
 }
-
 async function readXLSX(f){
   const buf=await f.file.arrayBuffer();
-  const wb=XLSX.read(buf,{type:'array',cellStyles:true,cellFormulas:true,cellDates:true});
+  const wb=XLSX.read(buf,{type:'array',cellStyles:true,cellFormulas:true});
   f.wb=wb;f.cellMap=[];
   wb.SheetNames.forEach(sn=>{
     const ws=wb.Sheets[sn];
@@ -698,7 +851,6 @@ async function readXLSX(f){
   f.preview=buildPrev(data.slice(0,4));
   f.status='pending';f.progress=0;renderFiles();return true;
 }
-
 async function readCSV(f){
   const txt=await f.file.text();
   const wb=XLSX.read(txt,{type:'string'});
@@ -715,31 +867,22 @@ async function readCSV(f){
   f.preview=buildPrev(data.slice(0,4));
   f.status='pending';f.progress=0;renderFiles();return true;
 }
-
 async function readDOCX(f){
   const buf=await f.file.arrayBuffer();
   const res=await mammoth.extractRawText({arrayBuffer:buf});
-  f.plainText=res.value;
-  f.rows=f.plainText.split('\n').filter(l=>l.trim()).length;
+  f.plainText=res.value;f.rows=f.plainText.split('\n').filter(l=>l.trim()).length;
   f.status='pending';f.progress=0;renderFiles();return true;
 }
-
 async function readText(f){
-  f.plainText=await f.file.text();
-  f.rows=f.plainText.split('\n').length;
+  f.plainText=await f.file.text();f.rows=f.plainText.split('\n').length;
   f.status='pending';f.progress=0;renderFiles();return true;
 }
-
 function buildPrev(rows){
   if(!rows||!rows.length)return'';
-  return'<table class="ptbl"><thead><tr>'+
-    rows[0].map(c=>`<th>${esc(String(c).substring(0,26))}</th>`).join('')+
-    '</tr></thead><tbody>'+
-    rows.slice(1).map(r=>'<tr>'+r.map(c=>`<td>${esc(String(c).substring(0,26))}</td>`).join('')+'</tr>').join('')+
-    '</tbody></table>';
+  return'<table class="ptbl"><thead><tr>'+rows[0].map(c=>`<th>${esc(String(c).substring(0,26))}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.slice(1).map(r=>'<tr>'+r.map(c=>`<td>${esc(String(c).substring(0,26))}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
 }
 
-// ── TRANSLATE ALL ─────────────────────────────────────
 async function translateAll(){
   const sL=document.getElementById('fSrcL').value,tL=document.getElementById('fTgtL').value;
   const tp=getTonePrompt('file'),tl=getToneLabel('file');
@@ -751,99 +894,58 @@ async function translateAll(){
     const ok=await readFile(f);if(!ok)continue;
     f.status='translating';f.progress=15;renderFiles();
     try{
-      if(f.ext==='pdf') await txText(f,sL,tL,tp);
-      else if(['xlsx','xls','csv'].includes(f.ext)) await txXLSX(f,sL,tL,tp);
-      else if(['docx','doc'].includes(f.ext)) await txDOCX(f,sL,tL,tp);
+      if(['xlsx','xls','csv'].includes(f.ext))await txXLSX(f,sL,tL,tp);
+      else if(['docx','doc'].includes(f.ext))await txDOCX(f,sL,tL,tp);
       else await txText(f,sL,tL,tp);
       f.status='done';f.progress=100;
       stats.f++;stats.t++;saveStat();
-      if(sett.autoSave){
-        const snip=(f.plainText||'').substring(0,300);
-        addMem(snip,(f.translatedText||'').substring(0,300),sL,tL,tl,f.name);
-      }
-      renderFiles();
-      exportFile(f);
-      toast(f.name+' – Exported!','ok');
-    }catch(e){
-      f.status='error';f.error=e.message;f.progress=0;renderFiles();
-      toast(f.name+': '+e.message,'err');
-    }
+      if(sett.autoSave)addMem((f.plainText||'').substring(0,300),(f.translatedText||'').substring(0,300),sL,tL,tl,f.name);
+      renderFiles();exportFile(f);
+      toast(f.name+' exported!','ok');
+    }catch(e){f.status='error';f.error=e.message;f.progress=0;renderFiles();toast(f.name+': '+e.message,'err');}
   }
   btn.disabled=false;btn.innerHTML='⚡ Translate &amp; Export All';
 }
 
 async function txXLSX(f,sL,tL,tp){
   const texts=f.cellMap.map(c=>c.orig),total=texts.length;
-  const translated=await translateBatch(texts,sL,tL,tp,(i)=>{
-    f.progress=15+Math.round(i/total*80);renderFiles();
-  });
-  f.cellMap.forEach((c,i)=>{
-    const ws=f.wb.Sheets[c.sheet];
-    if(ws[c.addr])ws[c.addr].v=translated[i];
-  });
-  f.translatedText=translated.join('\n');f.progress=95;
+  const tr=await translateBatch(texts,sL,tL,tp,(i)=>{f.progress=15+Math.round(i/total*80);renderFiles();});
+  f.cellMap.forEach((c,i)=>{const ws=f.wb.Sheets[c.sheet];if(ws[c.addr])ws[c.addr].v=tr[i];});
+  f.translatedText=tr.join('\n');f.progress=95;
 }
-
 async function txDOCX(f,sL,tL,tp){
   const paras=f.plainText.split('\n').filter(l=>l.trim()),total=paras.length;
-  const translated=await translateBatch(paras,sL,tL,tp,(i)=>{
-    f.progress=15+Math.round(i/total*80);renderFiles();
-  });
-  f.translatedText=translated.join('\n');f.progress=95;
+  const tr=await translateBatch(paras,sL,tL,tp,(i)=>{f.progress=15+Math.round(i/total*80);renderFiles();});
+  f.translatedText=tr.join('\n');f.progress=95;
 }
-
 async function txText(f,sL,tL,tp){
   const lines=f.plainText.split('\n');
-  // Keep page markers for PDF, only translate non-empty, non-marker lines
-  const meaningful=lines.map((l,i)=>({i,txt:l.trim()}))
-    .filter(x=>x.txt.length>1&&!x.txt.startsWith('--- Page '));
+  const meaningful=lines.map((l,i)=>({i,txt:l.trim()})).filter(x=>x.txt.length>1&&!x.txt.startsWith('--- Page '));
   const total=meaningful.length;
-  const translated=await translateBatch(meaningful.map(x=>x.txt),sL,tL,tp,(i)=>{
-    f.progress=15+Math.round(i/total*80);renderFiles();
-  });
+  const tr=await translateBatch(meaningful.map(x=>x.txt),sL,tL,tp,(i)=>{f.progress=15+Math.round(i/total*80);renderFiles();});
   const result=[...lines];
-  meaningful.forEach((x,i)=>{result[x.i]=translated[i];});
+  meaningful.forEach((x,i)=>{result[x.i]=tr[i];});
   f.translatedText=result.join('\n');f.progress=95;
 }
 
-// ── EXPORT ────────────────────────────────────────────
 function exportFile(f){
-  if(['xlsx','xls'].includes(f.ext)) exportXLSX(f);
-  else if(f.ext==='csv') exportCSV(f);
-  else if(['docx','doc'].includes(f.ext)) exportDOCX(f);
-  else exportTxt(f); // PDF and text files → .txt
-}
-
-function exportXLSX(f){
-  const out=XLSX.write(f.wb,{type:'array',bookType:'xlsx',compression:true});
-  dlBlob(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),base(f.name)+'_translated.xlsx');
-}
-function exportCSV(f){
-  const csv=XLSX.utils.sheet_to_csv(f.wb.Sheets[f.wb.SheetNames[0]]);
-  dlBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),base(f.name)+'_translated.csv');
-}
-function exportDOCX(f){
-  try{
-    const {Document,Packer,Paragraph,TextRun}=docx;
-    const doc=new Document({sections:[{children:
-      f.translatedText.split('\n').map(l=>new Paragraph({
-        children:[new TextRun({text:l,size:24,font:'Times New Roman'})]
-      }))
-    }]});
-    Packer.toBlob(doc).then(b=>dlBlob(b,base(f.name)+'_translated.docx'));
-  }catch{
-    dlBlob(new Blob([f.translatedText],{type:'text/plain;charset=utf-8'}),base(f.name)+'_translated.txt');
+  if(['xlsx','xls'].includes(f.ext)){
+    const out=XLSX.write(f.wb,{type:'array',bookType:'xlsx',compression:true});
+    dlBlob(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),base(f.name)+'_translated.xlsx');
+  }else if(f.ext==='csv'){
+    dlBlob(new Blob(['\uFEFF'+XLSX.utils.sheet_to_csv(f.wb.Sheets[f.wb.SheetNames[0]])],{type:'text/csv;charset=utf-8'}),base(f.name)+'_translated.csv');
+  }else if(['docx','doc'].includes(f.ext)){
+    try{
+      const {Document,Packer,Paragraph,TextRun}=docx;
+      const doc=new Document({sections:[{children:f.translatedText.split('\n').map(l=>new Paragraph({children:[new TextRun({text:l,size:24,font:'Times New Roman'})]}))}]});
+      Packer.toBlob(doc).then(b=>dlBlob(b,base(f.name)+'_translated.docx'));
+    }catch{dlBlob(new Blob([f.translatedText],{type:'text/plain;charset=utf-8'}),base(f.name)+'_translated.txt');}
+  }else{
+    const ext=f.ext==='pdf'?'txt':f.ext;
+    dlBlob(new Blob([f.translatedText],{type:'text/plain;charset=utf-8'}),base(f.name)+'_translated.'+ext);
   }
 }
-function exportTxt(f){
-  const ext=f.ext==='pdf'?'txt':f.ext;
-  dlBlob(new Blob([f.translatedText],{type:'text/plain;charset=utf-8'}),base(f.name)+'_translated.'+ext);
-}
-function dlBlob(b,n){
-  const u=URL.createObjectURL(b),a=document.createElement('a');
-  a.href=u;a.download=n;a.click();
-  setTimeout(()=>URL.revokeObjectURL(u),5000);
-}
+function dlBlob(b,n){const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(u),5000);}
 function base(n){return n.replace(/\.[^.]+$/,'');}
 
 // ── MEMORY ────────────────────────────────────────────
@@ -858,10 +960,7 @@ function renderMem(){
   const filt=q?memory.filter(m=>m.src.toLowerCase().includes(q)||m.res.toLowerCase().includes(q)||(m.tone||'').toLowerCase().includes(q)):memory;
   document.getElementById('mcnt').textContent='('+filt.length+')';
   const list=document.getElementById('mlist');
-  if(!filt.length){
-    list.innerHTML='<div class="empty"><div class="ei">'+(q?'🔍':'🧠')+'</div><p>'+(q?'No results found.':'No translations yet.<br>Start translating to build memory!')+'</p></div>';
-    return;
-  }
+  if(!filt.length){list.innerHTML='<div class="empty"><div class="ei">'+(q?'🔍':'🧠')+'</div><p>'+(q?'No results.':'No translations yet.')+'</p></div>';return;}
   list.innerHTML=filt.map(m=>`
     <div class="mitem">
       <div class="mlangs">
@@ -883,10 +982,7 @@ function exportMem(){dlBlob(new Blob([JSON.stringify(memory,null,2)],{type:'appl
 function importMem(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{
-    try{const d=JSON.parse(ev.target.result);if(Array.isArray(d)){memory=[...d,...memory].slice(0,500);localStorage.setItem(MK,JSON.stringify(memory));renderMem();toast('Imported '+d.length+' entries!','ok');}}
-    catch{toast('Invalid file','err');}
-  };
+  r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(Array.isArray(d)){memory=[...d,...memory].slice(0,500);localStorage.setItem(MK,JSON.stringify(memory));renderMem();toast('Imported '+d.length+' entries!','ok');}}catch{toast('Invalid file','err');}};
   r.readAsText(f);
 }
 
