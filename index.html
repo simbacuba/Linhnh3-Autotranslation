@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AutoTranslate AI – Dịch thuật Chinese, English, Vietnamese với tone control và giữ nguyên định dạng file">
+<title>AutoTranslate AI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#07101f;--sf:#0e1a2e;--sf2:#152240;--bd:#1a2d4a;
+  --ac:#00e5b4;--ac2:#4a8fff;--ac3:#f5a623;--red:#ff4d6d;
+  --tx:#ddeeff;--tx2:#7899bb;--tx3:#384f6e;--r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--tx)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 50% -5%,rgba(0,229,180,.05),transparent);pointer-events:none;z-index:0}
+
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:20px 18px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;padding-bottom:16px;border-bottom:1px solid var(--bd)}
+.logo{display:flex;align-items:center;gap:11px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--ac),var(--ac2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo h1{font-size:1.25rem;font-weight:800;letter-spacing:-.4px}
+.logo h1 em{color:var(--ac);font-style:normal}
+.logo sub{font-size:.67rem;color:var(--tx3);display:block;margin-top:1px}
+.hbadges{display:flex;gap:7px;flex-wrap:wrap}
+.hb{padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:600;font-family:'JetBrains Mono',monospace}
+.hb1{background:rgba(0,229,180,.1);color:var(--ac)}
+.hb2{background:rgba(74,143,255,.1);color:var(--ac2)}
+.hb3{background:rgba(245,166,35,.1);color:var(--ac3)}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:var(--sf);padding:4px;border-radius:var(--r);margin-bottom:22px}
+.tab{flex:1;padding:9px;border:none;background:transparent;color:var(--tx2);font-family:inherit;font-size:.82rem;font-weight:500;border-radius:9px;cursor:pointer;transition:all .2s}
+.tab.active{background:var(--sf2);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.tab:hover:not(.active){color:var(--tx)}
+.panel{display:none}.panel.active{display:block}
+
+/* LANG BAR */
+.lang-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.lsel{flex:1;padding:9px 13px;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:.88rem;border-radius:9px;cursor:pointer;outline:none;transition:border-color .2s}
+.lsel:focus{border-color:var(--ac)}
+.swap{width:36px;height:36px;border-radius:50%;background:var(--sf2);border:1px solid var(--bd);color:var(--ac);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.swap:hover{background:var(--ac);color:#000;transform:rotate(180deg)}
+
+/* TONE SELECTOR */
+.tone-section{margin-bottom:16px}
+.tone-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.9px;color:var(--tx3);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.tone-label::after{content:'';flex:1;height:1px;background:var(--bd)}
+.tone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tone-card{padding:11px 10px;border-radius:10px;border:1.5px solid var(--bd);background:var(--sf);cursor:pointer;transition:all .18s;text-align:center;position:relative;overflow:hidden}
+.tone-card:hover{border-color:var(--tx2);transform:translateY(-1px)}
+.tone-card.selected{border-color:var(--ac);background:rgba(0,229,180,.07)}
+.tone-card.selected .tone-name{color:var(--ac)}
+.tone-card.selected .tone-desc{color:var(--tx2)}
+.tone-icon{font-size:1.4rem;margin-bottom:5px;display:block}
+.tone-name{font-size:.78rem;font-weight:700;margin-bottom:2px;color:var(--tx)}
+.tone-desc{font-size:.65rem;color:var(--tx3);line-height:1.3}
+.custom-tone-wrap{margin-top:10px;display:none}
+.custom-tone-wrap.show{display:block}
+.custom-input{width:100%;padding:9px 13px;background:var(--sf);border:1.5px solid var(--bd);color:var(--tx);font-family:inherit;font-size:.85rem;border-radius:9px;outline:none;transition:border-color .2s}
+.custom-input:focus{border-color:var(--ac)}
+
+/* TEXT AREAS */
+.ta-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+.tbox{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.tbox:focus-within{border-color:rgba(0,229,180,.4)}
+.tbox-hdr{padding:9px 13px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px}
+.tinput{width:100%;height:200px;padding:13px;background:transparent;border:none;outline:none;color:var(--tx);font-family:'Be Vietnam Pro',sans-serif;font-size:.88rem;line-height:1.65;resize:none}
+.toutput{width:100%;min-height:200px;padding:13px;font-size:.88rem;line-height:1.65;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.tactions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* BUTTONS */
+.btn{padding:9px 20px;border-radius:9px;border:none;font-family:inherit;font-size:.87rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px}
+.btn-p{background:var(--ac);color:#000}
+.btn-p:hover{background:#00ccaa;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,229,180,.3)}
+.btn-s{background:var(--sf2);color:var(--tx);border:1px solid var(--bd)}
+.btn-s:hover{border-color:var(--ac);color:var(--ac)}
+.btn-d{background:transparent;color:var(--red);border:1px solid rgba(255,77,109,.25)}
+.btn-d:hover{background:rgba(255,77,109,.08)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-sm{padding:3px 9px;font-size:.7rem;border-radius:6px;background:var(--sf2);border:1px solid var(--bd);color:var(--tx2);cursor:pointer;transition:all .15s}
+.btn-sm:hover{color:var(--ac);border-color:var(--ac)}
+
+/* API KEY NOTICE */
+.api-notice{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:10px}
+.api-notice .icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.api-notice p{font-size:.8rem;color:var(--tx2);line-height:1.5}
+.api-notice a{color:var(--ac);text-decoration:none}
+.api-notice a:hover{text-decoration:underline}
+.api-key-row{display:flex;gap:8px;margin-top:8px}
+.api-key-row input{flex:1;padding:7px 11px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;border-radius:7px;outline:none}
+.api-key-row input:focus{border-color:var(--ac)}
+.api-key-row button{padding:7px 14px;background:var(--ac);color:#000;border:none;border-radius:7px;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer}
+.key-saved{font-size:.72rem;color:var(--ac);margin-top:4px;display:none}
+
+/* FILE ZONE */
+.drop-zone{border:2px dashed var(--bd);border-radius:var(--r);padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:13px;background:var(--sf)}
+.drop-zone:hover,.drop-zone.over{border-color:var(--ac);background:rgba(0,229,180,.04)}
+.drop-icon{font-size:2.6rem;margin-bottom:9px}
+.drop-zone h3{font-size:.92rem;margin-bottom:4px}
+.drop-zone p{font-size:.77rem;color:var(--tx3)}
+.ftypes{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.ft{padding:3px 9px;border-radius:20px;background:var(--sf2);font-size:.67rem;font-family:'JetBrains Mono',monospace;color:var(--tx3)}
+
+/* FILE CARDS */
+.flist{display:flex;flex-direction:column;gap:8px;margin-bottom:13px}
+.fcard{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.fcard-top{display:flex;align-items:center;gap:11px;padding:11px 13px}
+.ficon{font-size:1.6rem;flex-shrink:0}
+.finfo{flex:1;min-width:0}
+.fname{font-size:.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fmeta{font-size:.71rem;color:var(--tx3);font-family:'JetBrains Mono',monospace;margin-top:2px}
+.ftone-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.67rem;font-weight:600;background:rgba(0,229,180,.12);color:var(--ac);margin-top:3px}
+.fstatus{font-size:.71rem;font-weight:600;padding:2px 9px;border-radius:20px;flex-shrink:0}
+.st-pending{background:rgba(245,166,35,.14);color:var(--ac3)}
+.st-reading{background:rgba(74,143,255,.14);color:var(--ac2)}
+.st-translating{background:rgba(0,229,180,.14);color:var(--ac)}
+.st-done{background:rgba(0,229,180,.14);color:var(--ac)}
+.st-error{background:rgba(255,77,109,.14);color:var(--red)}
+.progbar{height:3px;background:var(--bd);margin-top:6px;border-radius:3px;overflow:hidden}
+.progfill{height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .4s;border-radius:3px}
+
+/* PREVIEW TABLE */
+.fpreview{padding:9px 13px 13px;border-top:1px solid var(--bd);display:none}
+.fpreview.show{display:block}
+.preview-label{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.preview-scroll{overflow-x:auto;max-height:120px;overflow-y:auto}
+.ptbl{border-collapse:collapse;font-size:.73rem;min-width:100%}
+.ptbl th{background:var(--sf2);padding:5px 9px;text-align:left;font-weight:600;color:var(--tx2);border:1px solid var(--bd);white-space:nowrap}
+.ptbl td{padding:4px 9px;border:1px solid var(--bd);color:var(--tx);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptbl tr:hover td{background:rgba(0,229,180,.04)}
+.factions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+
+/* TONE INDICATOR */
+.tone-indicator{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:.68rem;font-weight:600;background:rgba(0,229,180,.1);color:var(--ac);border:1px solid rgba(0,229,180,.2)}
+
+/* MEMORY */
+.mem-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+.msearch{width:100%;padding:9px 13px;margin-bottom:13px;background:var(--sf);border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:.87rem;border-radius:9px;outline:none}
+.msearch:focus{border-color:var(--ac)}
+.mlist{display:flex;flex-direction:column;gap:8px;max-height:460px;overflow-y:auto}
+.mitem{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:12px;transition:border-color .2s}
+.mitem:hover{border-color:var(--ac)}
+.mlangs{display:flex;gap:7px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+.ltag{padding:2px 8px;border-radius:20px;font-size:.67rem;font-weight:700}
+.lzh{background:rgba(255,77,109,.14);color:#ff8a9a}
+.lvi{background:rgba(0,229,180,.14);color:var(--ac)}
+.len{background:rgba(74,143,255,.14);color:var(--ac2)}
+.mtone{padding:2px 8px;border-radius:20px;font-size:.67rem;font-weight:600;background:rgba(245,166,35,.1);color:var(--ac3)}
+.mdate{margin-left:auto;font-size:.67rem;color:var(--tx3);font-family:'JetBrains Mono',monospace}
+.mtexts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mtext{font-size:.79rem;line-height:1.55;color:var(--tx2)}
+.empty{text-align:center;padding:50px 20px;color:var(--tx3)}
+.empty .ei{font-size:2.6rem;margin-bottom:10px}
+
+/* SETTINGS */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.sgrp{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px}
+.sgrp h3{font-size:.7rem;text-transform:uppercase;letter-spacing:.9px;color:var(--tx3);margin-bottom:10px}
+.srow{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.slabel{font-size:.83rem;color:var(--tx2)}
+.tog{width:36px;height:19px;border-radius:10px;background:var(--bd);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--ac)}
+.tog::after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s}
+.tog.on::after{transform:translateX(17px)}
+.apiinput{width:100%;padding:8px 11px;margin-top:7px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;border-radius:7px;outline:none}
+.apiinput:focus{border-color:var(--ac)}
+
+/* SPINNER / TOAST */
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(0,229,180,.2);border-top-color:var(--ac);animation:sp .6s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toasts{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{padding:11px 16px;border-radius:9px;font-size:.82rem;display:flex;align-items:center;gap:9px;animation:tIn .3s ease;max-width:310px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.t-ok{background:rgba(0,200,160,.95);color:#000}
+.t-err{background:rgba(255,77,109,.95);color:#fff}
+.t-inf{background:rgba(74,143,255,.95);color:#fff}
+@keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* FOOTER */
+.footer{text-align:center;padding:32px 0 16px;font-size:.72rem;color:var(--tx3)}
+.footer a{color:var(--ac);text-decoration:none}
+
+@media(max-width:660px){
+  .ta-grid,.mtexts,.sgrid{grid-template-columns:1fr}
+  .tone-grid{grid-template-columns:repeat(2,1fr)}
+  .hbadges{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-icon">🌐</div>
+    <div>
+      <h1>Auto<em>Translate</em> AI</h1>
+      <sub>Tone Control · Format Preserving · Claude AI</sub>
+    </div>
+  </div>
+  <div class="hbadges">
+    <span class="hb hb1">🎯 Tone Control</span>
+    <span class="hb hb2">📊 XLSX / DOCX</span>
+    <span class="hb hb3">💾 Auto Memory</span>
+  </div>
+</div>
+
+<!-- API KEY NOTICE -->
+<div class="api-notice" id="apiNotice">
+  <div class="icon">🔑</div>
+  <div style="flex:1">
+    <p><strong style="color:var(--tx)">Enter your Claude API key to start translating.</strong><br>
+    Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Your key is saved locally in your browser and never sent anywhere except directly to Anthropic's API.</p>
+    <div class="api-key-row">
+      <input type="password" id="quickApiKey" placeholder="sk-ant-api03-..." />
+      <button onclick="quickSaveKey()">Save Key</button>
+    </div>
+    <div class="key-saved" id="keySaved">✓ Key saved! You can now translate.</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('text',this)">✏️ Text</button>
+  <button class="tab" onclick="switchTab('file',this)">📁 Files</button>
+  <button class="tab" onclick="switchTab('memory',this)">🧠 Memory</button>
+  <button class="tab" onclick="switchTab('settings',this)">⚙️ Settings</button>
+</div>
+
+<!-- ══════ TEXT PANEL ══════ -->
+<div class="panel active" id="panel-text">
+  <div class="lang-bar">
+    <select class="lsel" id="srcL">
+      <option value="zh">🇨🇳 Chinese (中文)</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
+    </select>
+    <button class="swap" onclick="swapLangs()" title="Swap languages">⇄</button>
+    <select class="lsel" id="tgtL">
+      <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="zh">🇨🇳 Chinese (中文)</option>
+    </select>
+  </div>
+
+  <div class="tone-section">
+    <div class="tone-label">🎨 Translation Tone</div>
+    <div class="tone-grid" id="toneGrid"></div>
+    <div class="custom-tone-wrap" id="customWrap">
+      <input class="custom-input" id="customTone" placeholder="Describe your tone, e.g.: Warm and encouraging, like a mentor speaking to a student..." />
+    </div>
+  </div>
+
+  <div class="ta-grid">
+    <div class="tbox">
+      <div class="tbox-hdr">
+        <span>Source Text</span>
+        <span id="cc" style="font-family:'JetBrains Mono';color:var(--ac);font-size:.68rem">0 / 5000</span>
+      </div>
+      <textarea class="tinput" id="srcTxt" maxlength="5000" placeholder="Nhập hoặc dán văn bản cần dịch...&#10;Paste Chinese, English or Vietnamese text here..."></textarea>
+    </div>
+    <div class="tbox">
+      <div class="tbox-hdr">
+        <span>Translation</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span id="activeToneTag"></span>
+          <button class="btn-sm" onclick="copyOut()">Copy</button>
+        </div>
+      </div>
+      <div class="toutput" id="tgtTxt"><span style="color:var(--tx3);font-size:.83rem">Bản dịch sẽ hiển thị ở đây...<br><br>Translation will appear here...</span></div>
+    </div>
+  </div>
+  <div class="tactions">
+    <button class="btn btn-s" onclick="clearTxt()">🗑 Clear</button>
+    <button class="btn btn-p" id="txBtn" onclick="translateText()">⚡ Translate</button>
+    <button class="btn btn-s" onclick="saveMemory()">💾 Save to Memory</button>
+  </div>
+</div>
+
+<!-- ══════ FILE PANEL ══════ -->
+<div class="panel" id="panel-file">
+  <div class="lang-bar">
+    <select class="lsel" id="fSrcL">
+      <option value="zh">🇨🇳 Chinese (中文)</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
+    </select>
+    <div style="color:var(--tx3);font-size:1.1rem;flex-shrink:0">→</div>
+    <select class="lsel" id="fTgtL">
+      <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="zh">🇨🇳 Chinese (中文)</option>
+    </select>
+  </div>
+
+  <div class="tone-section">
+    <div class="tone-label">🎨 Translation Tone</div>
+    <div class="tone-grid" id="fileToneGrid"></div>
+    <div class="custom-tone-wrap" id="fileCustomWrap">
+      <input class="custom-input" id="fileCustomTone" placeholder="Describe your custom tone..." />
+    </div>
+  </div>
+
+  <div class="drop-zone" id="dropZone"
+    onclick="document.getElementById('fi').click()"
+    ondragover="dOver(event)" ondrop="dDrop(event)" ondragleave="dLeave()">
+    <div class="drop-icon">📂</div>
+    <h3>Thả file hoặc nhấn để chọn</h3>
+    <p>Giữ nguyên định dạng · Xuất đúng format gốc</p>
+    <div class="ftypes">
+      <span class="ft">.xlsx</span><span class="ft">.xls</span>
+      <span class="ft">.csv</span><span class="ft">.docx</span>
+      <span class="ft">.txt</span><span class="ft">.md</span>
+      <span class="ft">.json</span><span class="ft">.html</span>
+    </div>
+  </div>
+  <input type="file" id="fi" multiple
+    accept=".xlsx,.xls,.csv,.docx,.doc,.txt,.md,.json,.html"
+    style="display:none" onchange="onFileInput(event)">
+
+  <div class="flist" id="flist"></div>
+  <div class="factions" id="factions" style="display:none">
+    <button class="btn btn-s" onclick="clearFiles()">🗑 Clear All</button>
+    <button class="btn btn-p" id="allBtn" onclick="translateAll()">⚡ Translate &amp; Export All</button>
+  </div>
+</div>
+
+<!-- ══════ MEMORY PANEL ══════ -->
+<div class="panel" id="panel-memory">
+  <div class="mem-hdr">
+    <strong>🧠 Translation Memory <span id="mcnt" style="color:var(--tx3);font-weight:400;font-size:.83rem"></span></strong>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-s" style="padding:6px 14px;font-size:.8rem" onclick="exportMem()">📤 Export</button>
+      <button class="btn btn-d" style="padding:6px 14px;font-size:.8rem" onclick="clearMem()">Clear All</button>
+    </div>
+  </div>
+  <input class="msearch" id="msearch" placeholder="Tìm kiếm trong bộ nhớ..." oninput="renderMem()">
+  <div class="mlist" id="mlist"></div>
+</div>
+
+<!-- ══════ SETTINGS PANEL ══════ -->
+<div class="panel" id="panel-settings">
+  <div class="sgrid">
+    <div class="sgrp">
+      <h3>🔑 Claude API Key</h3>
+      <div style="font-size:.78rem;color:var(--tx3);margin-bottom:4px">Your key is stored locally, never shared.</div>
+      <input type="password" class="apiinput" id="apiKey" placeholder="sk-ant-api03-..." oninput="saveKey()">
+      <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">
+        Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--ac)">console.anthropic.com</a>
+      </div>
+    </div>
+    <div class="sgrp">
+      <h3>⚙️ Behavior</h3>
+      <div class="srow"><span class="slabel">Auto-save to memory</span><div class="tog on" id="t-autoSave" onclick="togSet('autoSave')"></div></div>
+      <div class="srow"><span class="slabel">Preserve formatting</span><div class="tog on" id="t-keepFmt" onclick="togSet('keepFmt')"></div></div>
+      <div class="srow"><span class="slabel">Parallel translation (faster)</span><div class="tog on" id="t-parallel" onclick="togSet('parallel')"></div></div>
+    </div>
+    <div class="sgrp">
+      <h3>📊 Statistics</h3>
+      <div class="srow"><span class="slabel">Total translations</span><span id="s-t" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
+      <div class="srow"><span class="slabel">Characters translated</span><span id="s-c" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
+      <div class="srow"><span class="slabel">Files processed</span><span id="s-f" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
+      <div class="srow"><span class="slabel">Memory entries</span><span id="s-m" style="font-family:'JetBrains Mono';font-size:.83rem;color:var(--ac)">0</span></div>
+    </div>
+    <div class="sgrp">
+      <h3>💾 Data Management</h3>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button class="btn btn-s" onclick="exportMem()" style="width:100%;justify-content:center">📤 Export Memory (JSON)</button>
+        <button class="btn btn-s" onclick="document.getElementById('impF').click()" style="width:100%;justify-content:center">📥 Import Memory</button>
+        <input type="file" id="impF" accept=".json" style="display:none" onchange="importMem(event)">
+        <button class="btn btn-d" onclick="clearMem()" style="width:100%;justify-content:center">🗑 Clear All Memory</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  Built with ❤️ using <a href="https://anthropic.com" target="_blank">Claude AI</a> ·
+  <a href="https://github.com" target="_blank">View on GitHub</a>
+</div>
+
+</div><!-- /wrap -->
+<div class="toasts" id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// TONES
+// ═══════════════════════════════════════════════
+const TONES=[
+  {id:'business',icon:'💼',name:'Business',desc:'Formal, professional & precise',
+   prompt:'Use a professional business tone. Language should be formal, clear, and authoritative. Avoid colloquialisms. Use industry-appropriate terminology. Suitable for reports, emails, and corporate documents.'},
+  {id:'casual',icon:'😊',name:'Casual',desc:'Friendly, relaxed & conversational',
+   prompt:'Use a casual, friendly conversational tone. Keep it natural and relaxed, like talking to a friend. Contractions are fine. Avoid overly formal or stiff language.'},
+  {id:'academic',icon:'🎓',name:'Academic',desc:'Scholarly, precise & objective',
+   prompt:'Use an academic/scholarly tone. Language should be precise, objective, and formal. Use passive voice where appropriate. Maintain a neutral, analytical perspective suitable for academic papers and research.'},
+  {id:'marketing',icon:'🚀',name:'Marketing',desc:'Persuasive, engaging & energetic',
+   prompt:'Use a dynamic marketing tone. Make it persuasive, enthusiastic, and engaging. Use active voice and compelling language. Create excitement and urgency. Focus on benefits and emotional appeal.'},
+  {id:'legal',icon:'⚖️',name:'Legal',desc:'Precise, formal & unambiguous',
+   prompt:'Use a precise legal tone. Language must be unambiguous and formally structured. Use exact legal terminology. Avoid contractions. Maintain strict formal register appropriate for legal contracts and official documents.'},
+  {id:'simple',icon:'🌱',name:'Simple',desc:'Clear, easy & accessible',
+   prompt:'Use very simple, easy-to-understand language. Short sentences. Avoid jargon or technical terms. Suitable for general public, beginners, or non-native readers. Aim for maximum clarity and accessibility.'},
+  {id:'journalistic',icon:'📰',name:'News',desc:'Objective, concise & factual',
+   prompt:'Use a journalistic tone. Be concise, factual, and objective. Lead with the most important information. Use active voice. Avoid opinion or bias. Suitable for news articles and press releases.'},
+  {id:'custom',icon:'✏️',name:'Custom',desc:'Define your own tone',
+   prompt:null}
+];
+
+// ═══════════════════════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════════════════════
+const MK='atrans_mem5',SK='atrans_stat5',SEK='atrans_set5';
+let memory=JSON.parse(localStorage.getItem(MK)||'[]');
+let stats=JSON.parse(localStorage.getItem(SK)||'{"t":0,"c":0,"f":0}');
+let sett=JSON.parse(localStorage.getItem(SEK)||'{"autoSave":true,"keepFmt":true,"parallel":true}');
+let files=[];
+let lastTr=null;
+let selectedTone='business';
+let fileSelectedTone='business';
+
+const LN={zh:'Chinese',vi:'Vietnamese',en:'English'};
+const LF={zh:'🇨🇳',vi:'🇻🇳',en:'🇬🇧'};
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+(function init(){
+  renderToneGrid('toneGrid','text');
+  renderToneGrid('fileToneGrid','file');
+  applySettings();
+  renderMem();
+  const k=localStorage.getItem('atrans_key');
+  if(k){
+    document.getElementById('apiKey').value=k;
+    document.getElementById('quickApiKey').value=k;
+    document.getElementById('apiNotice').style.display='none';
+  }
+  document.getElementById('srcTxt').addEventListener('input',e=>{
+    document.getElementById('cc').textContent=e.target.value.length+' / 5000';
+  });
+})();
+
+function quickSaveKey(){
+  const k=document.getElementById('quickApiKey').value.trim();
+  if(!k){toast('Please enter your API key','err');return;}
+  localStorage.setItem('atrans_key',k);
+  document.getElementById('apiKey').value=k;
+  document.getElementById('keySaved').style.display='block';
+  document.getElementById('apiNotice').style.background='rgba(0,229,180,.06)';
+  document.getElementById('apiNotice').style.borderColor='rgba(0,229,180,.3)';
+  toast('API key saved! Ready to translate.','ok');
+}
+
+// ═══════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════
+function switchTab(t,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  el.classList.add('active');
+  if(t==='memory')renderMem();
+  if(t==='settings')refreshStats();
+}
+
+// ═══════════════════════════════════════════════
+// TONE GRID
+// ═══════════════════════════════════════════════
+function renderToneGrid(cid,panel){
+  const grid=document.getElementById(cid);
+  const cur=panel==='text'?selectedTone:fileSelectedTone;
+  grid.innerHTML=TONES.map(t=>`
+    <div class="tone-card${t.id===cur?' selected':''}"
+         onclick="selectTone('${t.id}','${panel}','${cid}')">
+      <span class="tone-icon">${t.icon}</span>
+      <div class="tone-name">${t.name}</div>
+      <div class="tone-desc">${t.desc}</div>
+    </div>`).join('');
+}
+
+function selectTone(id,panel,cid){
+  if(panel==='text')selectedTone=id;
+  else fileSelectedTone=id;
+  renderToneGrid(cid,panel);
+  const wrap=panel==='text'?'customWrap':'fileCustomWrap';
+  document.getElementById(wrap).className='custom-tone-wrap'+(id==='custom'?' show':'');
+}
+
+function getTonePrompt(panel){
+  const id=panel==='text'?selectedTone:fileSelectedTone;
+  const t=TONES.find(x=>x.id===id);
+  if(id==='custom'){
+    const v=(panel==='text'?document.getElementById('customTone'):document.getElementById('fileCustomTone')).value.trim();
+    return v?'Use this translation tone/style: '+v:'Translate naturally and fluently.';
+  }
+  return t?t.prompt:'Translate naturally and fluently.';
+}
+
+function getToneLabel(panel){
+  const id=panel==='text'?selectedTone:fileSelectedTone;
+  const t=TONES.find(x=>x.id===id);
+  if(!t)return'';
+  if(id==='custom'){
+    const v=(panel==='text'?document.getElementById('customTone'):document.getElementById('fileCustomTone')).value.trim();
+    return v?'✏️ '+v.substring(0,18)+'...':t.icon+' Custom';
+  }
+  return t.icon+' '+t.name;
+}
+
+// ═══════════════════════════════════════════════
+// CLAUDE API
+// ═══════════════════════════════════════════════
+async function claude(userPrompt,tonePrompt){
+  const k=localStorage.getItem('atrans_key');
+  if(!k){toast('Please add your Claude API key in Settings','err');throw new Error('No API key');}
+  const sys=`You are a professional translator with expertise in tone and register adaptation.
+
+TRANSLATION RULES:
+- Output ONLY the translated text. No explanations, no preamble, no quotes, no markdown.
+- Preserve all paragraph breaks, line breaks, and structural formatting exactly.
+- Preserve numbers, dates, proper nouns, and technical terms appropriately.
+- TONE INSTRUCTION: ${tonePrompt}`;
+
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':k},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:sys,
+      messages:[{role:'user',content:userPrompt}]
+    })
+  });
+  if(!r.ok){
+    const err=await r.json().catch(()=>({}));
+    throw new Error(err.error?.message||'API error '+r.status);
+  }
+  const d=await r.json();
+  return d.content[0].text.trim();
+}
+
+async function translateBatch(items,srcL,tgtL,tonePrompt,onProgress){
+  const results=new Array(items.length);
+  if(sett.parallel){
+    await Promise.all(items.map((txt,i)=>
+      claude(`Translate this ${LN[srcL]} text to ${LN[tgtL]}:\n${txt}`,tonePrompt)
+        .then(r=>{results[i]=r;onProgress&&onProgress(i,items.length);})
+        .catch(()=>{results[i]=txt;})
+    ));
+  }else{
+    for(let i=0;i<items.length;i++){
+      try{results[i]=await claude(`Translate this ${LN[srcL]} text to ${LN[tgtL]}:\n${items[i]}`,tonePrompt);}
+      catch{results[i]=items[i];}
+      onProgress&&onProgress(i,items.length);
+    }
+  }
+  return results;
+}
+
+// ═══════════════════════════════════════════════
+// TEXT TRANSLATE
+// ═══════════════════════════════════════════════
+async function translateText(){
+  const src=document.getElementById('srcTxt').value.trim();
+  if(!src){toast('Nhập văn bản cần dịch','err');return;}
+  const sL=document.getElementById('srcL').value,tL=document.getElementById('tgtL').value;
+  if(sL===tL){toast('Source and target must be different','err');return;}
+  const tonePrompt=getTonePrompt('text'),toneLabel=getToneLabel('text');
+  const btn=document.getElementById('txBtn'),out=document.getElementById('tgtTxt');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Translating...';
+  out.innerHTML='<div style="display:flex;gap:8px;align-items:center;color:var(--tx3)"><div class="spin"></div> Translating with '+toneLabel+' tone...</div>';
+  document.getElementById('activeToneTag').innerHTML='';
+  try{
+    const res=await claude(`Translate the following ${LN[sL]} text to ${LN[tgtL]}:\n\n${src}`,tonePrompt);
+    out.textContent=res;
+    document.getElementById('activeToneTag').innerHTML=`<span class="tone-indicator">${toneLabel}</span>`;
+    lastTr={src,res,sL,tL,tone:toneLabel,ts:Date.now()};
+    stats.t++;stats.c+=src.length;saveStat();
+    if(sett.autoSave){addMem(src,res,sL,tL,toneLabel);toast('Translated & saved to memory ✓','ok');}
+    else toast('Translation complete!','ok');
+  }catch(e){
+    out.innerHTML=`<span style="color:var(--red)">⚠ ${esc(e.message)}</span>`;
+    if(e.message!=='No API key')toast(e.message,'err');
+  }finally{btn.disabled=false;btn.innerHTML='⚡ Translate';}
+}
+
+function swapLangs(){
+  const s=document.getElementById('srcL'),t=document.getElementById('tgtL');
+  const sv=s.value,tv=t.value;s.value=tv;t.value=sv;
+  const si=document.getElementById('srcTxt').value;
+  const ti=document.getElementById('tgtTxt').textContent;
+  if(ti&&!ti.includes('Bản dịch')&&!ti.includes('Translation will')){
+    document.getElementById('srcTxt').value=ti;
+    document.getElementById('tgtTxt').textContent=si;
+    document.getElementById('cc').textContent=ti.length+' / 5000';
+  }
+}
+function clearTxt(){
+  document.getElementById('srcTxt').value='';
+  document.getElementById('tgtTxt').innerHTML='<span style="color:var(--tx3);font-size:.83rem">Bản dịch sẽ hiển thị ở đây...<br><br>Translation will appear here...</span>';
+  document.getElementById('cc').textContent='0 / 5000';
+  document.getElementById('activeToneTag').innerHTML='';
+  lastTr=null;
+}
+function copyOut(){
+  navigator.clipboard.writeText(document.getElementById('tgtTxt').textContent)
+    .then(()=>toast('Copied to clipboard!','ok'))
+    .catch(()=>toast('Copy failed','err'));
+}
+function saveMemory(){
+  if(!lastTr){toast('Translate something first','err');return;}
+  addMem(lastTr.src,lastTr.res,lastTr.sL,lastTr.tL,lastTr.tone);
+  toast('Saved to memory!','ok');
+}
+
+// ═══════════════════════════════════════════════
+// FILE HANDLING
+// ═══════════════════════════════════════════════
+function dOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('over');}
+function dLeave(){document.getElementById('dropZone').classList.remove('over');}
+function dDrop(e){e.preventDefault();dLeave();addFiles(Array.from(e.dataTransfer.files));}
+function onFileInput(e){addFiles(Array.from(e.target.files));e.target.value='';}
+
+function addFiles(nf){
+  nf.forEach(f=>{
+    if(!files.find(x=>x.name===f.name&&x.size===f.size))
+      files.push({file:f,name:f.name,ext:f.name.split('.').pop().toLowerCase(),
+        size:f.size,status:'pending',progress:0,wb:null,cellMap:null,
+        plainText:null,translatedText:null,preview:null,error:null});
+  });
+  renderFiles();
+}
+function clearFiles(){files=[];renderFiles();}
+function removeFile(i){files.splice(i,1);renderFiles();}
+
+function renderFiles(){
+  const list=document.getElementById('flist'),act=document.getElementById('factions');
+  if(!files.length){list.innerHTML='';act.style.display='none';return;}
+  act.style.display='flex';
+  const toneLabel=getToneLabel('file');
+  list.innerHTML=files.map((f,i)=>`
+    <div class="fcard">
+      <div class="fcard-top">
+        <div class="ficon">${fIcon(f.ext)}</div>
+        <div class="finfo">
+          <div class="fname" title="${esc(f.name)}">${esc(f.name)}</div>
+          <div class="fmeta">${fmtSz(f.size)} · .${f.ext.toUpperCase()}${f.cellMap?' · '+f.cellMap.length+' cells':f.rows?' · '+f.rows+' lines':''}</div>
+          <div class="ftone-tag">${toneLabel}</div>
+          ${f.status!=='pending'?`<div class="progbar"><div class="progfill" style="width:${f.progress}%"></div></div>`:''}
+        </div>
+        <span class="fstatus st-${f.status}">${fStat(f.status)}</span>
+        <button onclick="removeFile(${i})" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:1rem;padding:0 4px;flex-shrink:0">✕</button>
+      </div>
+      ${f.preview?`<div class="fpreview show"><div class="preview-label">Preview</div><div class="preview-scroll">${f.preview}</div></div>`:''}
+    </div>`).join('');
+}
+
+function fIcon(e){return{xlsx:'📊',xls:'📊',csv:'📋',docx:'📝',doc:'📝',txt:'📃',md:'📑',json:'🗂',html:'🌐'}[e]||'📄';}
+function fmtSz(b){return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB';}
+function fStat(s){return{pending:'Pending',reading:'Reading...',translating:'Translating...',done:'✓ Done',error:'✗ Error'}[s];}
+
+// READ FILES
+async function readFile(f){
+  f.status='reading';f.progress=10;renderFiles();
+  try{
+    if(['xlsx','xls'].includes(f.ext))return await readXLSX(f);
+    if(f.ext==='csv')return await readCSV(f);
+    if(['docx','doc'].includes(f.ext))return await readDOCX(f);
+    return await readText(f);
+  }catch(e){f.status='error';f.error=e.message;renderFiles();return false;}
+}
+
+async function readXLSX(f){
+  const buf=await f.file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array',cellStyles:true,cellFormulas:true,cellDates:true});
+  f.wb=wb;f.cellMap=[];
+  wb.SheetNames.forEach(sn=>{
+    const ws=wb.Sheets[sn];
+    const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+    for(let r=range.s.r;r<=range.e.r;r++)
+      for(let c=range.s.c;c<=range.e.c;c++){
+        const addr=XLSX.utils.encode_cell({r,c}),cell=ws[addr];
+        if(cell&&cell.t==='s'&&cell.v&&String(cell.v).trim().length>1)
+          f.cellMap.push({sheet:sn,row:r,col:c,addr,orig:String(cell.v)});
+      }
+  });
+  const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+  f.preview=buildPrev(data.slice(0,5));
+  f.status='pending';f.progress=0;renderFiles();return true;
+}
+
+async function readCSV(f){
+  const txt=await f.file.text();
+  const wb=XLSX.read(txt,{type:'string'});
+  f.wb=wb;f.cellMap=[];
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+  for(let r=range.s.r;r<=range.e.r;r++)
+    for(let c=range.s.c;c<=range.e.c;c++){
+      const addr=XLSX.utils.encode_cell({r,c}),cell=ws[addr];
+      if(cell&&cell.t==='s'&&cell.v&&String(cell.v).trim().length>1)
+        f.cellMap.push({sheet:wb.SheetNames[0],row:r,col:c,addr,orig:String(cell.v)});
+    }
+  const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  f.preview=buildPrev(data.slice(0,5));
+  f.status='pending';f.progress=0;renderFiles();return true;
+}
+
+async function readDOCX(f){
+  const buf=await f.file.arrayBuffer();
+  const result=await mammoth.extractRawText({arrayBuffer:buf});
+  f.plainText=result.value;
+  f.rows=f.plainText.split('\n').filter(l=>l.trim()).length;
+  f.status='pending';f.progress=0;renderFiles();return true;
+}
+
+async function readText(f){
+  f.plainText=await f.file.text();
+  f.rows=f.plainText.split('\n').length;
+  f.status='pending';f.progress=0;renderFiles();return true;
+}
+
+function buildPrev(rows){
+  if(!rows||!rows.length)return'';
+  return'<table class="ptbl"><thead><tr>'+
+    rows[0].map(c=>`<th>${esc(String(c).substring(0,28))}</th>`).join('')+
+    '</tr></thead><tbody>'+
+    rows.slice(1).map(r=>'<tr>'+r.map(c=>`<td>${esc(String(c).substring(0,28))}</td>`).join('')+'</tr>').join('')+
+    '</tbody></table>';
+}
+
+// TRANSLATE ALL FILES
+async function translateAll(){
+  const sL=document.getElementById('fSrcL').value,tL=document.getElementById('fTgtL').value;
+  const tonePrompt=getTonePrompt('file'),toneLabel=getToneLabel('file');
+  const btn=document.getElementById('allBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Processing...';
+
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    if(f.status==='done')continue;
+    const ok=await readFile(f);if(!ok)continue;
+    f.status='translating';f.progress=15;renderFiles();
+    try{
+      if(['xlsx','xls'].includes(f.ext))await txXLSX(f,sL,tL,tonePrompt);
+      else if(f.ext==='csv')await txXLSX(f,sL,tL,tonePrompt);
+      else if(['docx','doc'].includes(f.ext))await txDOCX(f,sL,tL,tonePrompt);
+      else await txText(f,sL,tL,tonePrompt);
+
+      f.status='done';f.progress=100;
+      stats.f++;stats.t++;saveStat();
+      if(sett.autoSave){
+        const srcSnip=(f.plainText||f.cellMap?.map(c=>c.orig).join(' ')||'').substring(0,300);
+        addMem(srcSnip,(f.translatedText||'').substring(0,300),sL,tL,toneLabel,f.name);
+      }
+      renderFiles();
+      exportFile(f);
+      toast(f.name+' – Exported!','ok');
+    }catch(e){
+      f.status='error';f.error=e.message;f.progress=0;renderFiles();
+      toast(f.name+': '+e.message,'err');
+    }
+  }
+  btn.disabled=false;btn.innerHTML='⚡ Translate &amp; Export All';
+}
+
+async function txXLSX(f,sL,tL,tonePrompt){
+  const texts=f.cellMap.map(c=>c.orig),total=texts.length;
+  const translated=await translateBatch(texts,sL,tL,tonePrompt,(i)=>{
+    f.progress=15+Math.round(i/total*80);renderFiles();
+  });
+  f.cellMap.forEach((c,i)=>{const ws=f.wb.Sheets[c.sheet];if(ws[c.addr])ws[c.addr].v=translated[i];});
+  f.translatedText=translated.join('\n');f.progress=95;
+}
+
+async function txDOCX(f,sL,tL,tonePrompt){
+  const paras=f.plainText.split('\n').filter(l=>l.trim()),total=paras.length;
+  const translated=await translateBatch(paras,sL,tL,tonePrompt,(i)=>{
+    f.progress=15+Math.round(i/total*80);renderFiles();
+  });
+  f.translatedText=translated.join('\n');f.progress=95;
+}
+
+async function txText(f,sL,tL,tonePrompt){
+  const lines=f.plainText.split('\n');
+  const meaningful=lines.map((l,i)=>({i,txt:l.trim()})).filter(x=>x.txt.length>1);
+  const translated=await translateBatch(meaningful.map(x=>x.txt),sL,tL,tonePrompt,(i)=>{
+    f.progress=15+Math.round(i/meaningful.length*80);renderFiles();
+  });
+  const result=[...lines];
+  meaningful.forEach((x,i)=>{result[x.i]=translated[i];});
+  f.translatedText=result.join('\n');f.progress=95;
+}
+
+// EXPORT (preserve original format)
+function exportFile(f){
+  if(['xlsx','xls'].includes(f.ext))exportXLSX(f);
+  else if(f.ext==='csv')exportCSV(f);
+  else if(['docx','doc'].includes(f.ext))exportDOCX(f);
+  else exportText(f);
+}
+
+function exportXLSX(f){
+  const out=XLSX.write(f.wb,{type:'array',bookType:'xlsx',compression:true});
+  dlBlob(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
+    base(f.name)+'_translated.xlsx');
+}
+function exportCSV(f){
+  const csv=XLSX.utils.sheet_to_csv(f.wb.Sheets[f.wb.SheetNames[0]]);
+  dlBlob(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),base(f.name)+'_translated.csv');
+}
+function exportDOCX(f){
+  try{
+    const {Document,Packer,Paragraph,TextRun}=docx;
+    const doc=new Document({sections:[{children:
+      f.translatedText.split('\n').map(l=>new Paragraph({
+        children:[new TextRun({text:l,size:24,font:'Times New Roman'})]
+      }))
+    }]});
+    Packer.toBlob(doc).then(b=>dlBlob(b,base(f.name)+'_translated.docx'));
+  }catch{
+    dlBlob(new Blob([f.translatedText],{type:'text/plain;charset=utf-8'}),base(f.name)+'_translated.txt');
+  }
+}
+function exportText(f){
+  dlBlob(new Blob([f.translatedText],{type:'text/plain;charset=utf-8'}),base(f.name)+'_translated.'+f.ext);
+}
+function dlBlob(b,n){
+  const u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=n;a.click();
+  setTimeout(()=>URL.revokeObjectURL(u),5000);
+}
+function base(n){return n.replace(/\.[^.]+$/,'');}
+
+// ═══════════════════════════════════════════════
+// MEMORY
+// ═══════════════════════════════════════════════
+function addMem(src,res,sL,tL,tone,source){
+  source=source||'text';
+  memory.unshift({id:Date.now(),src:src.substring(0,700),res:res.substring(0,700),sL,tL,tone,source,ts:Date.now()});
+  if(memory.length>500)memory=memory.slice(0,500);
+  localStorage.setItem(MK,JSON.stringify(memory));
+}
+function renderMem(){
+  const q=(document.getElementById('msearch')?.value||'').toLowerCase();
+  const filt=q?memory.filter(m=>
+    m.src.toLowerCase().includes(q)||m.res.toLowerCase().includes(q)||(m.tone||'').toLowerCase().includes(q)
+  ):memory;
+  document.getElementById('mcnt').textContent='('+filt.length+' entries)';
+  const list=document.getElementById('mlist');
+  if(!filt.length){
+    list.innerHTML='<div class="empty"><div class="ei">'+(q?'🔍':'🧠')+'</div><p>'+(q?'No results found':'No translations saved yet.<br>Translate something to get started!')+'</p></div>';
+    return;
+  }
+  list.innerHTML=filt.map(m=>`
+    <div class="mitem">
+      <div class="mlangs">
+        <span class="ltag l${m.sL}">${LF[m.sL]} ${LN[m.sL]}</span>
+        <span style="color:var(--tx3);font-size:.8rem">→</span>
+        <span class="ltag l${m.tL}">${LF[m.tL]} ${LN[m.tL]}</span>
+        ${m.tone?`<span class="mtone">${m.tone}</span>`:''}
+        <span class="mdate">${new Date(m.ts).toLocaleDateString('vi-VN')}</span>
+      </div>
+      <div class="mtexts">
+        <div class="mtext">${esc(m.src.substring(0,200))}${m.src.length>200?'...':''}</div>
+        <div class="mtext">${esc(m.res.substring(0,200))}${m.res.length>200?'...':''}</div>
+      </div>
+      ${m.source&&m.source!=='text'?`<div style="font-size:.68rem;color:var(--tx3);margin-top:5px">📁 ${esc(m.source)}</div>`:''}
+    </div>`).join('');
+}
+function clearMem(){
+  if(!confirm('Clear all memory? This cannot be undone.'))return;
+  memory=[];localStorage.removeItem(MK);renderMem();toast('Memory cleared','inf');
+}
+function exportMem(){
+  dlBlob(new Blob([JSON.stringify(memory,null,2)],{type:'application/json'}),'translation_memory.json');
+  toast('Memory exported!','ok');
+}
+function importMem(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(Array.isArray(d)){
+        memory=[...d,...memory].slice(0,500);
+        localStorage.setItem(MK,JSON.stringify(memory));
+        renderMem();toast('Imported '+d.length+' entries!','ok');
+      }
+    }catch{toast('Invalid file format','err');}
+  };
+  r.readAsText(f);
+}
+
+// ═══════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════
+function togSet(k){
+  sett[k]=!sett[k];
+  document.getElementById('t-'+k).classList.toggle('on',sett[k]);
+  localStorage.setItem(SEK,JSON.stringify(sett));
+}
+function applySettings(){
+  Object.keys(sett).forEach(k=>{
+    const el=document.getElementById('t-'+k);
+    if(el)el.classList.toggle('on',sett[k]);
+  });
+}
+function saveKey(){
+  const k=document.getElementById('apiKey').value.trim();
+  if(k)localStorage.setItem('atrans_key',k);
+  else localStorage.removeItem('atrans_key');
+}
+function saveStat(){localStorage.setItem(SK,JSON.stringify(stats));}
+function refreshStats(){
+  document.getElementById('s-t').textContent=stats.t;
+  document.getElementById('s-c').textContent=stats.c.toLocaleString();
+  document.getElementById('s-f').textContent=stats.f;
+  document.getElementById('s-m').textContent=memory.length;
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function toast(msg,type){
+  type=type||'inf';
+  const c=document.getElementById('toasts');
+  const t=document.createElement('div');
+  t.className='toast t-'+type;
+  t.innerHTML='<span>'+(type==='ok'?'✓':type==='err'?'✗':'ℹ')+'</span>'+msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+}
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
