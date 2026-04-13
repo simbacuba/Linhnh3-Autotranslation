@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="AutoTranslate AI – Chinese, English, Vietnamese with tone control and format preservation">
-<title>AutoTranslate AI</title>
+<title>AutoTranslate AI – Free Gemini</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
@@ -241,30 +241,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="hbadges">
     <span class="hb hb1">🎯 Tone Control</span>
     <span class="hb hb2">📄 PDF / XLSX / DOCX</span>
-    <span class="hb hb3">✏️ Editable Output</span>
+    <span class="hb hb3">✨ Free Gemini AI</span>
   </div>
 </div>
 
 <!-- API KEY -->
 <div class="api-notice" id="apiNotice">
-  <p><strong>🔑 Enter your Claude API key to start.</strong><br>
-  Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Stored only in your browser.</p>
+  <p><strong>🔑 Enter your Google Gemini API key to start.</strong><br>
+  Get one <strong style="color:var(--ac)">100% free</strong> at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> — no credit card required.</p>
   <div class="api-key-row">
-    <input type="password" id="quickApiKey" placeholder="sk-ant-api03-...">
+    <input type="password" id="quickApiKey" placeholder="AIza...">
     <button onclick="quickSaveKey()">Save Key</button>
   </div>
-  <div class="key-hint" id="keyHint">✓ Key saved! You can now translate.</div>
+  <div class="key-hint" id="keyHint">✓ Key saved! You can now translate for free.</div>
 </div>
 
-<!-- CORS ERROR BANNER -->
-<div class="cors-banner" id="corsBanner">
-  <strong>⚠ Connection blocked (CORS error)</strong> — GitHub Pages cannot call Anthropic's API directly.<br>
-  <strong>Fix in 2 minutes:</strong> Set up a free Cloudflare Worker (see ⚙️ Settings → Worker URL), then paste your Worker URL there.
-  <a href="#" onclick="switchTab('settings',document.querySelectorAll('.tab')[3]);return false;"
-     style="display:inline-block;margin-top:8px;padding:5px 14px;background:var(--ac);color:#000;border-radius:7px;font-weight:700;font-size:.8rem;text-decoration:none">
-    ⚙️ Go to Settings →
-  </a>
-</div>
+<!-- Gemini API: no CORS issues -->
 
 <!-- TABS -->
 <div class="tabs">
@@ -400,40 +392,28 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <!-- SETTINGS PANEL -->
 <div class="panel" id="panel-settings">
 
-  <!-- WORKER URL — full width, top of settings -->
+  <!-- GEMINI FREE API INFO -->
   <div style="background:rgba(0,229,180,.06);border:1.5px solid rgba(0,229,180,.25);border-radius:var(--r);padding:18px;margin-bottom:16px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="font-size:1.1rem">⚡</span>
-      <strong style="font-size:.95rem">Cloudflare Worker URL</strong>
-      <span style="font-size:.72rem;background:rgba(0,229,180,.15);color:var(--ac);padding:2px 8px;border-radius:20px;font-weight:600">Required for GitHub Pages</span>
+      <span style="font-size:1.1rem">✨</span>
+      <strong style="font-size:.95rem">Google Gemini API — 100% Free</strong>
+      <span style="font-size:.72rem;background:rgba(0,229,180,.15);color:var(--ac);padding:2px 8px;border-radius:20px;font-weight:600">No credit card needed</span>
     </div>
-    <div style="font-size:.82rem;color:var(--tx2);margin-bottom:12px;line-height:1.6">
-      Paste your Cloudflare Worker URL here. This solves the CORS error permanently.<br>
-      <strong style="color:var(--tx)">How to set up (2 min, free):</strong><br>
-      1. Go to <a href="https://workers.cloudflare.com" target="_blank" style="color:var(--ac)">workers.cloudflare.com</a> → Sign up free<br>
-      2. Click <strong style="color:var(--tx)">Create Worker</strong> → replace all code with the <code style="font-family:'JetBrains Mono';font-size:.75rem;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">worker.js</code> file you downloaded<br>
-      3. Click <strong style="color:var(--tx)">Deploy</strong> → copy the URL (e.g. <code style="font-family:'JetBrains Mono';font-size:.75rem;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">https://my-worker.username.workers.dev</code>)<br>
-      4. Paste it below and click Save
+    <div style="font-size:.82rem;color:var(--tx2);line-height:1.7">
+      Free limits: <strong style="color:var(--tx)">15 requests/min · 1,000,000 tokens/day</strong><br>
+      <strong style="color:var(--tx)">Get your free key in 1 minute:</strong><br>
+      1. Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--ac)">aistudio.google.com/app/apikey</a><br>
+      2. Click <strong style="color:var(--tx)">Create API Key</strong> → copy it<br>
+      3. Paste it in the API Key field below → Save
     </div>
-    <div style="display:flex;gap:8px">
-      <input type="text" id="workerUrl" placeholder="https://my-worker.username.workers.dev"
-        style="flex:1;padding:9px 13px;background:var(--bg);border:1.5px solid var(--bd);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;border-radius:8px;outline:none;transition:border-color .2s"
-        onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--bd)'"
-        oninput="workerUrlChanged()">
-      <button onclick="saveWorkerUrl()" style="padding:9px 18px;background:var(--ac);color:#000;border:none;border-radius:8px;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap">
-        Save
-      </button>
-    </div>
-    <div id="workerSaved" style="font-size:.72rem;color:var(--ac);margin-top:6px;display:none">✓ Worker URL saved! Translation should work now.</div>
-    <div id="workerNone" style="font-size:.72rem;color:var(--ac3);margin-top:6px;display:none">⚠ No Worker URL set — translation will fail on GitHub Pages.</div>
   </div>
 
   <div class="sgrid">
     <div class="sgrp">
       <h3>🔑 Claude API Key</h3>
       <div style="font-size:.78rem;color:var(--tx3);margin-bottom:4px">Stored locally in browser only.</div>
-      <input type="password" class="apiinput" id="apiKey" placeholder="sk-ant-api03-..." oninput="saveKey()">
-      <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">Get key: <a href="https://console.anthropic.com" target="_blank" style="color:var(--ac)">console.anthropic.com</a></div>
+      <input type="password" class="apiinput" id="apiKey" placeholder="AIza..." oninput="saveKey()">
+      <div style="font-size:.69rem;color:var(--tx3);margin-top:5px">Get free key: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--ac)">aistudio.google.com</a></div>
     </div>
     <div class="sgrp">
       <h3>⚙️ Behavior</h3>
@@ -466,15 +446,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ── API ENDPOINT ─────────────────────────────────────
-// By default uses your Cloudflare Worker URL (set in Settings)
-// Worker handles CORS so GitHub Pages can call Anthropic API
-const DIRECT_URL='https://api.anthropic.com/v1/messages';
-
-function getApiUrl(){
-  const worker=localStorage.getItem('atrans_worker')||'';
-  return worker||DIRECT_URL;
-}
+// ── GEMINI API ───────────────────────────────────────
+// Free tier: 15 req/min, 1M tokens/day — no credit card needed
+// No CORS issues — works directly from browser/GitHub Pages
+const GEMINI_MODEL='gemini-1.5-flash';
+const GEMINI_BASE='https://generativelanguage.googleapis.com/v1beta/models/';
 
 // ── TONES ────────────────────────────────────────────
 const TONES=[
@@ -647,36 +623,39 @@ function getToneLabel(panel){
 // ── CLAUDE API ───────────────────────────────────────
 async function claude(userPrompt,tonePrompt){
   const k=localStorage.getItem('atrans_key');
-  if(!k){toast('Please add your Claude API key','err');throw new Error('No API key');}
-  const sys=`You are a professional translator.\nRULES:\n- Output ONLY the translated text. No explanations, no quotes, no markdown.\n- Preserve paragraph breaks and line breaks exactly.\n- TONE: ${tonePrompt}`;
-  const apiUrl=getApiUrl();
+  if(!k){toast('Please add your Gemini API key in Settings','err');throw new Error('No API key');}
+  const fullPrompt=`You are a professional translator.
+RULES:
+- Output ONLY the translated text. No explanations, no quotes, no markdown.
+- Preserve paragraph breaks and line breaks exactly.
+- TONE: ${tonePrompt}
+
+${userPrompt}`;
   let r;
   try{
-    r=await fetch(apiUrl,{
+    r=await fetch(`${GEMINI_BASE}${GEMINI_MODEL}:generateContent?key=${k}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,
-        messages:[{role:'user',content:userPrompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:fullPrompt}]}],
+        generationConfig:{temperature:0.3,maxOutputTokens:2048}
+      })
     });
   }catch(err){
-    // Show CORS banner on network/fetch error
-    showCorsBanner();
-    throw new Error('Network error – see CORS fix above');
+    throw new Error('Network error: '+err.message);
   }
   if(!r.ok){
     const e=await r.json().catch(()=>({}));
-    const msg=e.error?.message||'API error '+r.status;
-    if(r.status===0||msg.includes('CORS')||msg.includes('fetch'))showCorsBanner();
+    const msg=e.error?.message||'Gemini API error '+r.status;
     throw new Error(msg);
   }
   const d=await r.json();
-  return d.content[0].text.trim();
+  const text=d.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!text)throw new Error('Empty response from Gemini');
+  return text.trim();
 }
 
-function showCorsBanner(){
-  const b=document.getElementById('corsBanner');
-  b.classList.add('show');
-}
+// showCorsBanner: not needed with Gemini API
 
 
 async function translateBatch(items,sL,tL,tp,onProg){
